@@ -2,7 +2,6 @@ import { CalendarList } from "react-native-calendars";
 import { COLORS } from "../constants";
 import { backgroundColor } from "react-native-calendars/src/style";
 import { View, Text, Image, StyleSheet } from "react-native";
-import { Calendar } from "react-native-calendario";
 
 const CalendarOn = () => {
   const listDate = [
@@ -21,6 +20,18 @@ const CalendarOn = () => {
 
     {
       date: "2023-06-25",
+      type: "picture",
+      imgLink:
+        "https://i.pinimg.com/originals/ff/6e/e6/ff6ee672bb14438dda4f34968af1c79c.jpg",
+    },
+    {
+      date: "2023-06-22",
+      type: "picture",
+      imgLink:
+        "https://i.pinimg.com/originals/ff/6e/e6/ff6ee672bb14438dda4f34968af1c79c.jpg",
+    },
+    {
+      date: "2023-06-29",
       type: "picture",
       imgLink:
         "https://i.pinimg.com/originals/ff/6e/e6/ff6ee672bb14438dda4f34968af1c79c.jpg",
@@ -44,7 +55,7 @@ const CalendarOn = () => {
         monthTextColor: "white",
         textMonthFontFamily: "InterMedium",
         textDayHeaderFontFamily: "InterRegular",
-        weekVerticalMargin: 8,
+        weekVerticalMargin: 5,
         textMonthFontSize: 18,
         "stylesheet.calendar.main": {
           dayContainer: {
@@ -54,9 +65,12 @@ const CalendarOn = () => {
           emptyDayContainer: {
             width: 50,
             height: 50,
-            // borderWidth: 2,
-            // borderColor: "black",
-            // borderRadius: "50%",
+          },
+        },
+        "stylesheet.calendar-list.main": {
+          calendar: {
+            paddingLeft: 2,
+            paddingRight: 2,
           },
         },
       }}
@@ -118,7 +132,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderWidth: 2,
     borderColor: "white",
-    borderRadius: "50%",
+    borderRadius: 50,
   },
   noEntryDate: {
     flex: 1,
@@ -128,7 +142,7 @@ const styles = StyleSheet.create({
   picture: {
     width: 50,
     height: 50,
-    borderRadius: "50%",
+    borderRadius: 50,
   },
 });
 
