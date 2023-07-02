@@ -201,8 +201,10 @@ const Home = () => {
                     </TouchableOpacity>
                 ),
                 headerLeft: () => (
-                    <TouchableOpacity style={{ backgroundColor: 'red', width: 20, height: 20 }} onPress={() => { router.push('/note/4') }} >
-                    </TouchableOpacity>
+                    <View style={{ flexDirection: 'row', columnGap: '5' }}><TouchableOpacity style={{ backgroundColor: 'red', width: 20, height: 20 }} onPress={() => { router.push('/note/4') }} >
+                    </TouchableOpacity><TouchableOpacity style={{ backgroundColor: 'orange', width: 20, height: 20 }} onPress={() => { router.push('/camera/4') }} >
+                        </TouchableOpacity></View>
+
                 ),
                 headerTitle: () => (
                     <TouchableOpacity style={{ backgroundColor: 'blue', width: 20, height: 20 }} onPress={() => { router.push('/voice/4') }} >
