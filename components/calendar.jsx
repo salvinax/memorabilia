@@ -42,7 +42,7 @@ const CalendarOn = () => {
       pastScrollRange={3}
       futureScrollRange={12}
       scrollEnabled={true}
-      calendarHeight={450}
+      calendarHeight={420}
       theme={{
         textSectionTitleColor: "white",
         backgroundColor: "#000000",

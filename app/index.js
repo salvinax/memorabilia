@@ -3,13 +3,21 @@ import * as WebBrowser from 'expo-web-browser'
 import { Stack, useRouter } from 'expo-router'
 import CalendarOn from '../components/calendar'
 import { useState, useEffect } from 'react';
-import { makeRedirectUri, useAuthRequest } from 'expo-auth-session';
+import { useAuthRequest } from 'expo-auth-session';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET, REDIRECT_URI } from '@env';
+
+import { withAuthenticator } from 'aws-amplify-react-native';
 
 import { encode as btoa } from 'base-64';
 
 import { COLORS } from '../constants'
+
+import { Amplify, Storage } from 'aws-amplify';
+import config from '../src/aws-exports';
+Amplify.configure(config);
+
+//login with aws https://instamobile.io/mobile-development/react-native-aws-amplify/
 
 WebBrowser.maybeCompleteAuthSession(); //only for web doesn't do anything in native
 //https://developer.spotify.com/documentation/web-api/tutorials/code-flow 

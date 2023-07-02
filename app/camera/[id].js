@@ -5,14 +5,9 @@ import { Linking } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { Camera, CameraType } from 'expo-camera';
 import { Ionicons } from '@expo/vector-icons';
-import { backgroundColor } from 'react-native-calendars/src/style';
 import * as MediaLibrary from 'expo-media-library'
 import * as VideoThumbnails from 'expo-video-thumbnails';
-
-import * as FileSystem from 'expo-file-system'
-
-
-
+import { TransitionPresets } from '@react-navigation/stack';
 
 const Video = () => {
     const [hasPermission, setHasPermission] = useState(null);
@@ -66,6 +61,8 @@ const Video = () => {
             ? CameraType.front
             : CameraType.back
         );
+
+        setRecording(false);
     }
 
     const pickMedia = async () => {
@@ -90,7 +87,7 @@ const Video = () => {
             <Stack.Screen options={{
                 headerStyle: { backgroundColor: 'black' }, title: '', header: () => (
                     <View style={activeButton === "picture" ? styles.headerPicture : styles.headerVideo}></View>
-                )
+                ), ...TransitionPresets.ModalSlideFromBottomIOS,
             }} />
             <View style={{ flex: 1, flexDirection: 'column' }}>
                 <Camera style={activeButton === "picture" ? styles.cameraLengthPic : styles.cameraLengthVid} type={type} ref={ref => {
@@ -121,7 +118,7 @@ const Video = () => {
                                 if (!recording) {
                                     setRecording(true);
                                     let video = await cameraRef.recordAsync();
-                                    console.log("video", video);
+                                    console.log('we finished recording')
                                 } else {
                                     setRecording(false);
                                     cameraRef.stopRecording();
