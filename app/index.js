@@ -6,18 +6,22 @@ import { useState, useEffect } from 'react';
 import { useAuthRequest } from 'expo-auth-session';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET, REDIRECT_URI } from '@env';
+import { AuthModeStrategyType } from 'aws-amplify'
 
-import { withAuthenticator } from 'aws-amplify-react-native';
+
 
 import { encode as btoa } from 'base-64';
 
 import { COLORS } from '../constants'
 
-import { Amplify, Storage } from 'aws-amplify';
+import { Amplify, Auth } from 'aws-amplify';
 import config from '../src/aws-exports';
-Amplify.configure(config);
+import { withAuthenticator } from 'aws-amplify-react-native';
+Amplify.configure(config)
+
 
 //login with aws https://instamobile.io/mobile-development/react-native-aws-amplify/
+//https://docs.amplify.aws/lib/auth/getting-started/q/platform/js/#option-1-use-pre-built-ui-components
 
 WebBrowser.maybeCompleteAuthSession(); //only for web doesn't do anything in native
 //https://developer.spotify.com/documentation/web-api/tutorials/code-flow 
@@ -240,4 +244,4 @@ const Home = () => {
     )
 }
 
-export default Home;
+export default withAuthenticator(Home);

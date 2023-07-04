@@ -9,6 +9,7 @@ import * as MediaLibrary from 'expo-media-library'
 import * as VideoThumbnails from 'expo-video-thumbnails';
 import { TransitionPresets } from '@react-navigation/stack';
 
+
 const Video = () => {
     const [hasPermission, setHasPermission] = useState(null);
     const [cameraRef, setCameraRef] = useState(null)
@@ -17,7 +18,16 @@ const Video = () => {
     const [activeButton, setActiveButton] = useState('picture');
     const [firstImg, setFirstImg] = useState()
 
+
     const [media, setMedia] = useState()
+
+
+
+
+
+
+
+
 
     useEffect(() => {
         const getFirstImg = async () => {
@@ -75,7 +85,8 @@ const Video = () => {
         });
 
         if (!result.canceled) {
-            setImage(result.assets[0].uri);
+            setMedia(result.assets[0].uri);
+
         }
     }
 
@@ -114,11 +125,12 @@ const Video = () => {
                         <TouchableOpacity style={{ alignSelf: 'center' }} onPress={async () => {
                             if (cameraRef && activeButton == "picture") {
                                 let photo = await cameraRef.takePictureAsync();
+                                setMedia(photo)
                             } else if (cameraRef && activeButton == "video") {
                                 if (!recording) {
                                     setRecording(true);
                                     let video = await cameraRef.recordAsync();
-                                    console.log('we finished recording')
+                                    setMedia(video)
                                 } else {
                                     setRecording(false);
                                     cameraRef.stopRecording();

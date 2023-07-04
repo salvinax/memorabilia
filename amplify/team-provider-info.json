@@ -1,0 +1,23 @@
+{
+  "dev": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-memorabilia-dev-224832-authRole",
+      "UnauthRoleArn": "arn:aws:iam::120721444701:role/amplify-memorabilia-dev-224832-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::120721444701:role/amplify-memorabilia-dev-224832-authRole",
+      "Region": "us-east-1",
+      "DeploymentBucketName": "amplify-memorabilia-dev-224832-deployment",
+      "UnauthRoleName": "amplify-memorabilia-dev-224832-unauthRole",
+      "StackName": "amplify-memorabilia-dev-224832",
+      "StackId": "arn:aws:cloudformation:us-east-1:120721444701:stack/amplify-memorabilia-dev-224832/1a0973a0-194c-11ee-9f51-0e682ef35043",
+      "AmplifyAppId": "d2nba05k7dqg1w"
+    },
+    "categories": {
+      "auth": {
+        "memorabilia582582ec": {}
+      },
+      "api": {
+        "memorabilia": {}
+      }
+    }
+  }
+}
