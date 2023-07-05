@@ -1,6 +1,32 @@
 {
+  "api": {
+    "memorabilia": {
+      "dependsOn": [
+        {
+          "attributes": [
+            "UserPoolId"
+          ],
+          "category": "auth",
+          "resourceName": "memorabiliacf7b5c96"
+        }
+      ],
+      "output": {
+        "authConfig": {
+          "additionalAuthenticationProviders": [],
+          "defaultAuthentication": {
+            "authenticationType": "AMAZON_COGNITO_USER_POOLS",
+            "userPoolConfig": {
+              "userPoolId": "authmemorabiliacf7b5c96"
+            }
+          }
+        }
+      },
+      "providerPlugin": "awscloudformation",
+      "service": "AppSync"
+    }
+  },
   "auth": {
-    "memorabilia5379f63c": {
+    "memorabiliacf7b5c96": {
       "customAuth": false,
       "dependsOn": [],
       "frontendAuthConfig": {
@@ -25,48 +51,6 @@
       },
       "providerPlugin": "awscloudformation",
       "service": "Cognito"
-    }
-  },
-  "function": {
-    "S3Trigger209fd46d": {
-      "build": true,
-      "providerPlugin": "awscloudformation",
-      "service": "Lambda"
-    }
-  },
-  "parameters": {
-    "AMPLIFY_function_S3Trigger209fd46d_deploymentBucketName": {
-      "usedBy": [
-        {
-          "category": "function",
-          "resourceName": "S3Trigger209fd46d"
-        }
-      ]
-    },
-    "AMPLIFY_function_S3Trigger209fd46d_s3Key": {
-      "usedBy": [
-        {
-          "category": "function",
-          "resourceName": "S3Trigger209fd46d"
-        }
-      ]
-    }
-  },
-  "storage": {
-    "memorabilia": {
-      "dependsOn": [
-        {
-          "attributes": [
-            "Name",
-            "Arn",
-            "LambdaExecutionRole"
-          ],
-          "category": "function",
-          "resourceName": "S3Trigger209fd46d"
-        }
-      ],
-      "providerPlugin": "awscloudformation",
-      "service": "S3"
     }
   }
 }
