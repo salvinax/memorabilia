@@ -8,6 +8,7 @@ import CircularProgress, { ProgressRef } from 'react-native-circular-progress-in
 import { icons } from '../../constants';
 import { Auth, Storage, API } from "aws-amplify"
 import * as mutations from '../../src/graphql/mutations'
+import { ENDPOINT_TEMP, ENDPOINT_TEMP_STORE } from '@env';
 
 
 
@@ -42,25 +43,67 @@ const Voice = () => {
 
         // let yourDate = new Date()
         // let entryDate = yourDate.toISOString().split('T')[0]
+        console.log('we here')
 
         let dates = '2020-02-01'
 
         const key = id + '-' + dates
 
-        const file = 'C:/Users/salvi/Downloads/pause.png'
+        const file = uri
+        console.log(file)
+
+        const session = await Auth.currentSession();
+        const accessToken = session.getAccessToken().getJwtToken();
+
+        const query = mutations.createEntry
+        const endpoint = ENDPOINT_TEMP + '/graphql'
+        const variables = { input: { date: dates, type: "entry", contentType: 'audio', mediaLink: { bucket: "memos3", region: "us-east-1", key: key } } }
+
+        const requestOptions = {
+            method: 'POST',
+            headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ query, variables }),
+        };
+
+        const request1Options = {
+            method: 'POST',
+            headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+            body: file,
+        };
+
 
         try {
-            const store = await Storage.put(key, file)
-            console.log(store)
-            const response = await API.graphql({
-                query: mutations.createEntry,
-                variables: { input: { date: dates, type: "entry", contentType: "Audio", mediaLink: { bucket: "memos3", region: "us-east-1", key: key } } },
-            })
-            console.log(response)
-
+            // const store = await Storage.put(key, localUri.uri)
+            // console.log(store)
+            const store = await fetch(`${ENDPOINT_TEMP_STORE}/public/${key}`, request1Options);
+            console.log(JSON.stringify(store))
+            const query = await fetch(endpoint, requestOptions);
+            console.log(JSON.stringify(query))
+            // const data = await response.json();
+            // console.log(data)
+            // console.log(response)
         } catch (error) {
-            console.log('Not able to Create Post: ', error)
+            console.log(error)
+            // Handle any errors
         }
+
+
+
+
+
+
+        // try {
+        //     const store = await Storage.put(key, file)
+        //     console.log(store)
+        //     const response = await API.graphql({
+        //         query: mutations.createEntry,
+        //         variables: { input: { date: dates, type: "entry", contentType: "Audio", mediaLink: { bucket: "memos3", region: "us-east-1", key: key } } },
+        //     })
+        //     console.log(response)
+
+        // } catch (error) {
+        //     console.log('Not able to Create Post: ', error)
+        // }
 
     }
 
@@ -189,7 +232,6 @@ const Voice = () => {
 
             <Text style={styles.text}>{formatTime(duration)}</Text>
             <TouchableOpacity onPress={recording ? stopRecording : startRecording}><Text style={styles.text}>{recording ? 'stop' : 'start'}</Text></TouchableOpacity>
-            <TouchableOpacity onPress={addEntry}><Text style={styles.text}>hi</Text></TouchableOpacity>
 
             {sound ? <View >
                 <View style={styles.open}>
@@ -209,7 +251,7 @@ const Voice = () => {
                         <Image style={styles.pause} source={pause ? icons.play : icons.pause} /></TouchableOpacity>
                 </View>
                 <View>
-                    <TouchableOpacity><Text style={styles.text}>add</Text></TouchableOpacity>
+                    <TouchableOpacity onPress={addEntry}><Text style={styles.text}>add</Text></TouchableOpacity>
                     {/* button to add to database */}
                 </View>
             </View>

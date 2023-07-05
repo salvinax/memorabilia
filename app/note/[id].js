@@ -47,7 +47,7 @@ const Note = () => {
 
         const query = mutations.createEntry
         const endpoint = ENDPOINT_TEMP + '/graphql'
-        const variables = { input: { date: '2020-06-07', type: "entry", contentType: "Text", text: text, titleText: title } }
+        const variables = { input: { date: '2020-06-07', type: "entry", contentType: "text", text: text, titleText: title } }
 
         const requestOptions = {
             method: 'POST',
@@ -58,8 +58,7 @@ const Note = () => {
         try {
             console.log('we trying')
             const response = await fetch(endpoint, requestOptions);
-            const data = await response.json();
-            console.log(data)
+            console.log(JSON.stringify(response))
         } catch (error) {
             console.log(error)
             // Handle any errors

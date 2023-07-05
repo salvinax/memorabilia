@@ -2,8 +2,13 @@ import { useEffect, useState } from "react";
 import { Text, View, TouchableOpacity, StyleSheet, Image } from "react-native";
 import { icons } from "../../constants";
 
+import { API, Auth } from "aws-amplify";
+import * as mutations from "../../src/graphql/mutations";
+import { ENDPOINT_TEMP, ENDPOINT_TEMP_STORE } from "@env";
+
 const SongItem = ({ data, prefix }) => {
   const [artistList, setArtistList] = useState("");
+  const [id, setID] = useState("");
   const [track, setTrack] = useState(() => {
     if (prefix) {
       //if it's a search result
@@ -15,6 +20,16 @@ const SongItem = ({ data, prefix }) => {
   });
 
   useEffect(() => {
+    Auth.currentUserInfo()
+      .then((user) => {
+        setID(user.attributes.sub);
+      })
+      .catch((error) => {
+        console.log("Auth Error", error);
+      });
+  }, []);
+
+  useEffect(() => {
     let artistArr = [];
     track.artists.map((item) => {
       artistArr.push(item.name);
@@ -22,8 +37,74 @@ const SongItem = ({ data, prefix }) => {
     setArtistList(artistArr.join(", "));
   }, []);
 
+  const addEntry = async () => {
+    let dates = "2020-02-06";
+
+    const key = id + "-" + dates;
+
+    const file = track.album.images[0].url;
+
+    const session = await Auth.currentSession();
+    const accessToken = session.getAccessToken().getJwtToken();
+
+    const query = mutations.createEntry;
+    const endpoint = ENDPOINT_TEMP + "/graphql";
+    const variables = {
+      input: {
+        date: dates,
+        type: "entry",
+        contentType: "song",
+        songLink: track.external_urls.spotify,
+        name: track.name,
+        artists: artistList,
+        mediaLink: { bucket: "memos3", region: "us-east-1", key: key },
+      },
+    };
+
+    const requestOptions = {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ query, variables }),
+    };
+
+    const request1Options = {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+      body: file,
+    };
+
+    try {
+      // const store = await Storage.put(key, localUri.uri)
+      // console.log(store)
+      const store = await fetch(
+        `${ENDPOINT_TEMP_STORE}/public/${key}`,
+        request1Options
+      );
+      console.log(JSON.stringify(store));
+      const query = await fetch(endpoint, requestOptions);
+      console.log(JSON.stringify(query));
+      // const data = await response.json();
+      // console.log(data)
+      // console.log(response)
+    } catch (error) {
+      console.log(error);
+      // Handle any errors
+    }
+
+    console.log(track.album.images[0].url);
+    console.log(artistList);
+    console.log(track.name);
+    console.log(track.external_urls.spotify);
+  };
+
   return (
-    <TouchableOpacity style={styles.track}>
+    <TouchableOpacity onPress={addEntry} style={styles.track}>
       <Image
         style={styles.trackImg}
         source={{ uri: track.album.images[0].url }}

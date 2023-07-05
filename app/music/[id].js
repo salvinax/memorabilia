@@ -43,11 +43,24 @@ const musicSearch = () => {
             console.log('no data')
         } else {
             const songData = await tracks.json()
-            setTracks(songData)
-            console.log('songdata')
+
+
+            // console.log(songData.items)
             // songData.items.map((item) => {
-            //     console.log(item.name)
+            //     console.log(item.track.id)
             // })
+
+            songData.items = songData.items.filter((item, index) => {
+                return index == songData.items.findIndex(obj => {
+                    return obj.track.id === item.track.id
+                })
+            })
+            //if indexes don't match up that means that there is already an occurence 
+
+
+            setTracks(songData)
+
+
         }
     }
 
