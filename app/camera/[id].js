@@ -16,8 +16,20 @@ const Video = () => {
     const [recording, setRecording] = useState(false)
     const [activeButton, setActiveButton] = useState('picture');
     const [firstImg, setFirstImg] = useState()
+    const [id, setID] = useState("")
 
     const [media, setMedia] = useState()
+
+    useEffect(() => {
+        Auth.currentUserInfo().then((user) => {
+            setID(user.attributes.sub)
+
+        }).catch((error) => {
+            console.log('Auth Error', error)
+        })
+
+
+    }, [])
 
     useEffect(() => {
         const getFirstImg = async () => {
@@ -75,8 +87,35 @@ const Video = () => {
         });
 
         if (!result.canceled) {
-            setImage(result.assets[0].uri);
+            setMedia(result.assets[0].uri);
         }
+    }
+
+
+    const addEntry = async () => {
+
+        // let yourDate = new Date()
+        // let entryDate = yourDate.toISOString().split('T')[0]
+
+        let dates = '2020-02-02'
+
+        const key = id + '-' + dates
+
+        const file = 'C:/Users/salvi/Downloads/videoplayback.mp4'
+
+        try {
+            const store = await Storage.put(key, file)
+            console.log(store)
+            const response = await API.graphql({
+                query: mutations.createEntry,
+                variables: { input: { date: dates, type: "entry", contentType: activeButton, mediaLink: { bucket: "memos3", region: "us-east-1", key: key } } },
+            })
+            console.log(response)
+
+        } catch (error) {
+            console.log('Not able to Create Post: ', error)
+        }
+
     }
 
 
@@ -114,10 +153,12 @@ const Video = () => {
                         <TouchableOpacity style={{ alignSelf: 'center' }} onPress={async () => {
                             if (cameraRef && activeButton == "picture") {
                                 let photo = await cameraRef.takePictureAsync();
+                                setMedia(photo)
                             } else if (cameraRef && activeButton == "video") {
                                 if (!recording) {
                                     setRecording(true);
                                     let video = await cameraRef.recordAsync();
+                                    setMedia(video)
                                     console.log('we finished recording')
                                 } else {
                                     setRecording(false);

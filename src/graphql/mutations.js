@@ -10,7 +10,11 @@ export const createEntry = /* GraphQL */ `
       date
       type
       contentType
-      mediaLink
+      mediaLink {
+        bucket
+        region
+        key
+      }
       text
       titleText
       name
@@ -32,7 +36,11 @@ export const updateEntry = /* GraphQL */ `
       date
       type
       contentType
-      mediaLink
+      mediaLink {
+        bucket
+        region
+        key
+      }
       text
       titleText
       name
@@ -54,7 +62,11 @@ export const deleteEntry = /* GraphQL */ `
       date
       type
       contentType
-      mediaLink
+      mediaLink {
+        bucket
+        region
+        key
+      }
       text
       titleText
       name

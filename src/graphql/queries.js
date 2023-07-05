@@ -7,7 +7,11 @@ export const getEntry = /* GraphQL */ `
       date
       type
       contentType
-      mediaLink
+      mediaLink {
+        bucket
+        region
+        key
+      }
       text
       titleText
       name
@@ -39,7 +43,6 @@ export const listEntries = /* GraphQL */ `
         date
         type
         contentType
-        mediaLink
         text
         titleText
         name
@@ -75,7 +78,6 @@ export const entryByDate = /* GraphQL */ `
         date
         type
         contentType
-        mediaLink
         text
         titleText
         name

@@ -6,6 +6,8 @@ import { Linking } from 'react-native';
 import CircularProgress, { ProgressRef } from 'react-native-circular-progress-indicator';
 // import RNFS from 'react-native-fs'
 import { icons } from '../../constants';
+import { Auth, Storage, API } from "aws-amplify"
+import * as mutations from '../../src/graphql/mutations'
 
 
 
@@ -18,6 +20,49 @@ const Voice = () => {
     const [pause, setPause] = useState(true)
     const progressRef = useRef(null);
     const [finish, setFinish] = useState(false)
+    const [uri, setUri] = useState('')
+    const [id, setID] = useState("")
+
+
+    useEffect(() => {
+        Auth.currentUserInfo().then((user) => {
+            setID(user.attributes.sub)
+
+        }).catch((error) => {
+            console.log('Auth Error', error)
+        })
+
+
+    }, [])
+
+
+
+
+    const addEntry = async () => {
+
+        // let yourDate = new Date()
+        // let entryDate = yourDate.toISOString().split('T')[0]
+
+        let dates = '2020-02-01'
+
+        const key = id + '-' + dates
+
+        const file = 'C:/Users/salvi/Downloads/pause.png'
+
+        try {
+            const store = await Storage.put(key, file)
+            console.log(store)
+            const response = await API.graphql({
+                query: mutations.createEntry,
+                variables: { input: { date: dates, type: "entry", contentType: "Audio", mediaLink: { bucket: "memos3", region: "us-east-1", key: key } } },
+            })
+            console.log(response)
+
+        } catch (error) {
+            console.log('Not able to Create Post: ', error)
+        }
+
+    }
 
 
     useEffect(() => {
@@ -98,13 +143,15 @@ const Voice = () => {
 
     const stopRecording = async () => {
         console.log('Stopping recording..');
-        setRecording(undefined);
+
         await recording.stopAndUnloadAsync();
         await Audio.setAudioModeAsync({
             allowsRecordingIOS: false,
         });
         const uri = recording.getURI();
+        setUri(uri)
         playRecording(uri);
+        setRecording(undefined);
     }
 
     const formatTime = (msec) => {
@@ -142,6 +189,7 @@ const Voice = () => {
 
             <Text style={styles.text}>{formatTime(duration)}</Text>
             <TouchableOpacity onPress={recording ? stopRecording : startRecording}><Text style={styles.text}>{recording ? 'stop' : 'start'}</Text></TouchableOpacity>
+            <TouchableOpacity onPress={addEntry}><Text style={styles.text}>hi</Text></TouchableOpacity>
 
             {sound ? <View >
                 <View style={styles.open}>

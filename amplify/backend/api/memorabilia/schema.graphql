@@ -5,7 +5,12 @@ input AMPLIFY {
 } # FOR TESTING ONLY!
 type Entry
   @model
-  @auth(rules: [{ allow: owner, operations: [create, delete, update, read] }]) {
+  @auth(
+    rules: [
+      { allow: owner, operations: [create, delete, update, read] }
+      { allow: public, operations: [read] }
+    ]
+  ) {
   date: AWSDate! @primaryKey
   type: String!
     @index(
@@ -14,11 +19,17 @@ type Entry
       sortKeyFields: ["date"]
     )
   contentType: String!
-  mediaLink: String
+  mediaLink: S3Object
   text: String
   titleText: String
   name: String
   artists: String
   albumLink: String
   songLink: String
+}
+
+type S3Object {
+  bucket: String!
+  region: String!
+  key: String!
 }

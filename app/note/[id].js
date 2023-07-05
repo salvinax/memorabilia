@@ -1,9 +1,10 @@
 import { Text, View, SafeAreaView, TextInput, StyleSheet, ScrollView, TouchableOpacity, Keyboard } from "react-native"
 import { Stack } from 'expo-router'
-import { API, graphqlOperation } from 'aws-amplify'
+import { API, graphqlOperation, Auth } from 'aws-amplify'
 import { useEffect, useState } from "react"
 import * as mutations from '../../src/graphql/mutations'
 import * as queries from '../../src/graphql/queries'
+import { ENDPOINT_TEMP } from '@env';
 
 
 
@@ -16,43 +17,54 @@ const Note = () => {
 
     const addEntry = async () => {
 
-        let yourDate = new Date()
-        let entryDate = yourDate.toISOString().split('T')[0]
+        // let yourDate = new Date()
+        // let entryDate = yourDate.toISOString().split('T')[0]
+
+        // try {
+        //     const response = await API.graphql({
+        //         query: mutations.createEntry,
+        //         variables: { input: { date: entryDate, type: "entry", contentType: "Text", text: text, titleText: title } }
+
+        //     })
+        //     console.log(response)
+
+        // } catch (error) {
+        //     console.log('Not able to Create Post: ', error)
+        // }
+
+        // }
+
+
+        //ran into issue: local api did not want to connect to expo server on ios device - conflict between emulator localhost and server localhost getting network error
+        //could not call locally hosted server from expo
+        //solution instead of using API function from aws amplify use fetch instead, and set up a tunnel using ngrok were exposing server on localhost to the web where
+        //expo can access it ngrok http 192.168.56.1:20002 => get a link to use as fetch endpoint
+        //then i was getting a 404 error i added /graphql to the url and the request went through 
+
+        const session = await Auth.currentSession();
+        const accessToken = session.getAccessToken().getJwtToken();
+
+
+        const query = mutations.createEntry
+        const endpoint = ENDPOINT_TEMP + '/graphql'
+        const variables = { input: { date: '2020-06-07', type: "entry", contentType: "Text", text: text, titleText: title } }
+
+        const requestOptions = {
+            method: 'POST',
+            headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ query, variables }),
+        };
 
         try {
-            const response = await API.graphql({
-                query: mutations.createEntry,
-                variables: { input: { date: entryDate, type: "entry", contentType: "Text", text: text, titleText: title } }
-
-            })
-            console.log(response)
-
+            console.log('we trying')
+            const response = await fetch(endpoint, requestOptions);
+            const data = await response.json();
+            console.log(data)
         } catch (error) {
-            console.log('Not able to Create Post: ', error)
+            console.log(error)
+            // Handle any errors
         }
-
     }
-
-
-    // const query = mutations.createUser
-
-    // const requestOptions = {
-    //     method: 'POST',
-    //     headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
-    //     body: JSON.stringify({ query, variables }),
-    // };
-
-    // try {
-    //     console.log('we trying')
-    //     const response = await fetch(endpoint, requestOptions);
-    //     // const data = await response.json();
-    //     // Process the response data
-    //     console.log(response)
-    // } catch (error) {
-    //     console.log(error)
-    //     // Handle any errors
-    // }
-
     return (
 
         <SafeAreaView style={{ flex: 1, backgroundColor: 'black' }}>

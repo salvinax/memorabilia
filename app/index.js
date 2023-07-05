@@ -15,7 +15,12 @@ import { COLORS } from '../constants'
 
 import { Amplify, Storage } from 'aws-amplify';
 import config from '../src/aws-exports';
-Amplify.configure(config);
+Amplify.configure({
+    ...config,
+    Analytics: {
+        disabled: true,
+    },
+});
 
 //login with aws https://instamobile.io/mobile-development/react-native-aws-amplify/
 
