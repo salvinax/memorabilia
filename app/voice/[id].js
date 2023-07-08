@@ -1,14 +1,17 @@
-import { Text, View, Image, TouchableOpacity, StyleSheet, SafeAreaView } from 'react-native'
+import { Text, View, Image, TouchableOpacity, StyleSheet, SafeAreaView, Pressable } from 'react-native'
 import { useState, useEffect, useRef } from 'react'
 import { Audio } from 'expo-av'
 import { Stack, useRouter } from 'expo-router';
 import { Linking } from 'react-native';
-import CircularProgress, { ProgressRef } from 'react-native-circular-progress-indicator';
-// import RNFS from 'react-native-fs'
+import CircularProgress from 'react-native-circular-progress-indicator';
 import { icons } from '../../constants';
 import { Auth, Storage, API } from "aws-amplify"
 import * as mutations from '../../src/graphql/mutations'
 import { ENDPOINT_TEMP, ENDPOINT_TEMP_STORE } from '@env';
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import { TransitionPresets } from '@react-navigation/stack';
+
+
 
 
 
@@ -18,10 +21,7 @@ const Voice = () => {
     const [duration, setDuration] = useState(0);
     const [sound, setSound] = useState();
     const [soundTime, setSoundTime] = useState()
-    const [pause, setPause] = useState(true)
-    const progressRef = useRef(null);
-    const [finish, setFinish] = useState(false)
-    const [uri, setUri] = useState('')
+
     const [id, setID] = useState("")
 
 
@@ -44,48 +44,49 @@ const Voice = () => {
         // let yourDate = new Date()
         // let entryDate = yourDate.toISOString().split('T')[0]
         console.log('we here')
+        router.push('/')
 
-        let dates = '2020-02-01'
+        // let dates = '2020-02-01'
 
-        const key = id + '-' + dates
+        // const key = id + '-' + dates
 
-        const file = uri
-        console.log(file)
+        // const file = uri
+        // console.log(file)
 
-        const session = await Auth.currentSession();
-        const accessToken = session.getAccessToken().getJwtToken();
+        // const session = await Auth.currentSession();
+        // const accessToken = session.getAccessToken().getJwtToken();
 
-        const query = mutations.createEntry
-        const endpoint = ENDPOINT_TEMP + '/graphql'
-        const variables = { input: { date: dates, type: "entry", contentType: 'audio', mediaLink: { bucket: "memos3", region: "us-east-1", key: key } } }
+        // const query = mutations.createEntry
+        // const endpoint = ENDPOINT_TEMP + '/graphql'
+        // const variables = { input: { date: dates, type: "entry", contentType: 'audio', mediaLink: { bucket: "memos3", region: "us-east-1", key: key } } }
 
-        const requestOptions = {
-            method: 'POST',
-            headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ query, variables }),
-        };
+        // const requestOptions = {
+        //     method: 'POST',
+        //     headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+        //     body: JSON.stringify({ query, variables }),
+        // };
 
-        const request1Options = {
-            method: 'POST',
-            headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
-            body: file,
-        };
+        // const request1Options = {
+        //     method: 'POST',
+        //     headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+        //     body: file,
+        // };
 
 
-        try {
-            // const store = await Storage.put(key, localUri.uri)
-            // console.log(store)
-            const store = await fetch(`${ENDPOINT_TEMP_STORE}/public/${key}`, request1Options);
-            console.log(JSON.stringify(store))
-            const query = await fetch(endpoint, requestOptions);
-            console.log(JSON.stringify(query))
-            // const data = await response.json();
-            // console.log(data)
-            // console.log(response)
-        } catch (error) {
-            console.log(error)
-            // Handle any errors
-        }
+        // try {
+        //     // const store = await Storage.put(key, localUri.uri)
+        //     // console.log(store)
+        //     const store = await fetch(`${ENDPOINT_TEMP_STORE}/public/${key}`, request1Options);
+        //     console.log(JSON.stringify(store))
+        //     const query = await fetch(endpoint, requestOptions);
+        //     console.log(JSON.stringify(query))
+        //     // const data = await response.json();
+        //     // console.log(data)
+        //     // console.log(response)
+        // } catch (error) {
+        //     console.log(error)
+        //     // Handle any errors
+        // }
 
 
 
@@ -159,28 +160,6 @@ const Voice = () => {
         }
     }
 
-    const playRecording = async (uri) => {
-        //function that playback
-        console.log('Loading Sound');
-        const { sound } = await Audio.Sound.createAsync({ uri: uri })
-        sound.setOnPlaybackStatusUpdate(onPlaybackStatusUpdate);
-        setSound(sound);
-        const { durationMillis } = await sound.getStatusAsync();
-        setSoundTime(durationMillis);
-        setPause(false);
-        console.log('Playing Sound')
-        await sound.playAsync();
-    }
-
-    const onPlaybackStatusUpdate = async (playbackStatus) => {
-        if (playbackStatus.didJustFinish && !playbackStatus.isLooping) {
-            console.log('sound is done playing')
-            setFinish(true)
-            setPause(true)
-        }
-
-    }
-
 
 
 
@@ -192,8 +171,7 @@ const Voice = () => {
             allowsRecordingIOS: false,
         });
         const uri = recording.getURI();
-        setUri(uri)
-        playRecording(uri);
+        addEntry(uri)
         setRecording(undefined);
     }
 
@@ -204,58 +182,39 @@ const Voice = () => {
         return `${minutes < 10 ? '0' : ''}${minutes}:${remainingSeconds < 10 ? '0' : ''}${remainingSeconds}`;
     };
 
-    const playBack = async () => {
-        //if track is currently playing
-        if (!pause && !finish) {
-            await sound.pauseAsync()
-            progressRef.current.pause();
-            setPause(true)
-        } else if (pause && !finish) {
-            //track is paused and we want to continue
-            await sound.playAsync()
-            progressRef.current.play();
-            setPause(false)
-        } else if (pause && finish) {
-            await sound.replayAsync()
-            setFinish(false)
-            setPause(false)
-            progressRef.current.reAnimate();
 
-        }
-    }
 
     return (
         <SafeAreaView style={{ flex: 1, backgroundColor: 'black', alignItems: 'center' }}>
             <Stack.Screen options={{
-                headerShown: false
+                headerShown: false, ...TransitionPresets.ModalSlideFromBottomIOS,
             }} />
 
-            <Text style={styles.text}>{formatTime(duration)}</Text>
-            <TouchableOpacity onPress={recording ? stopRecording : startRecording}><Text style={styles.text}>{recording ? 'stop' : 'start'}</Text></TouchableOpacity>
 
-            {sound ? <View >
-                <View style={styles.open}>
-                    <CircularProgress
-                        ref={progressRef}
-                        value={100}
-                        radius={120}
-                        duration={soundTime}
-                        activeStrokeColor='white'
-                        showProgressValue={false}
-                        inActiveStrokeWidth={15}
-                        activeStrokeWidth={15}
-                        inActiveStrokeColor="grey"
-                        inActiveStrokeOpacity={0.3}
+            <View style={{ justifyContent: 'center', alignItems: 'center' }}>
+
+                <Pressable onPress={() => { router.push('/new/4') }}>
+
+                    <MaterialIcons
+                        name="keyboard-arrow-down"
+                        size={40}
+                        color="white"
                     />
-                    <TouchableOpacity onPress={playBack} style={styles.test}>
-                        <Image style={styles.pause} source={pause ? icons.play : icons.pause} /></TouchableOpacity>
-                </View>
-                <View>
-                    <TouchableOpacity onPress={addEntry}><Text style={styles.text}>add</Text></TouchableOpacity>
-                    {/* button to add to database */}
+
+
+                </Pressable>
+
+
+
+
+                <View style={{ marginTop: 200 }}>
+                    <Text style={styles.text}>{formatTime(duration)}</Text>
+                    <Image style={{ height: 180, width: 180, marginTop: 20, marginBottom: 20 }} source={icons.waves} />
+                    <TouchableOpacity onPress={recording ? stopRecording : startRecording}>
+                        <Text style={styles.text}>{recording ? 'stop' : 'start'}</Text>
+                    </TouchableOpacity>
                 </View>
             </View>
-                : null}
         </SafeAreaView>
     )
 }
@@ -265,9 +224,8 @@ const styles = StyleSheet.create({
 
     text: {
         color: 'white',
-        fontSize: 15,
+        fontSize: 30,
         fontFamily: 'InterMedium',
-        marginTop: 60,
         textAlign: 'center'
     },
     test: {

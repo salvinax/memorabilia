@@ -3,7 +3,7 @@ import {
   Image,
   TextInput,
   Text,
-  TouchableOpacity,
+  Pressable,
   StyleSheet,
   FlatList,
 } from "react-native";
@@ -12,8 +12,11 @@ import { icons } from "../../constants";
 import SongItem from "./songItem";
 import { useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import { useRouter } from "expo-router";
 
 const SearchBar = ({ data }) => {
+  const router = useRouter();
   const [searchTerm, setSearchTerm] = useState("");
   const [searchResult, setSearchResult] = useState([]);
 
@@ -64,7 +67,14 @@ const SearchBar = ({ data }) => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.searchTitle}>Search</Text>
+      <Pressable
+        style={{ alignSelf: "center" }}
+        onPress={() => {
+          router.push("/new/4");
+        }}
+      >
+        <MaterialIcons name="keyboard-arrow-down" size={40} color="white" />
+      </Pressable>
       <TextInput
         style={styles.searchBar}
         placeholderTextColor={"grey"}

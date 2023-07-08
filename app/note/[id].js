@@ -1,10 +1,11 @@
-import { Text, View, SafeAreaView, TextInput, StyleSheet, ScrollView, TouchableOpacity, Keyboard } from "react-native"
-import { Stack } from 'expo-router'
+import { Text, View, SafeAreaView, TextInput, StyleSheet, ScrollView, TouchableOpacity, Keyboard, Pressable } from "react-native"
+import { Stack, useRouter } from 'expo-router'
 import { API, graphqlOperation, Auth } from 'aws-amplify'
 import { useEffect, useState } from "react"
 import * as mutations from '../../src/graphql/mutations'
-import * as queries from '../../src/graphql/queries'
 import { ENDPOINT_TEMP } from '@env';
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import { TransitionPresets } from '@react-navigation/stack';
 
 
 
@@ -14,6 +15,8 @@ const Note = () => {
     const d = new Date();
     const [title, setTitle] = useState('')
     const [text, setText] = useState('')
+
+    const router = useRouter()
 
     const addEntry = async () => {
 
@@ -63,14 +66,27 @@ const Note = () => {
             console.log(error)
             // Handle any errors
         }
+
+        router.push('/')
     }
     return (
 
         <SafeAreaView style={{ flex: 1, backgroundColor: 'black' }}>
             <Stack.Screen options={{
-                headerStyle: { backgroundColor: 'black' }, headerRight: () => (<TouchableOpacity style={styles.doneBtn} onPress={() => { Keyboard.dismiss() }} />
-                ), headerTitle: () => (<TouchableOpacity style={styles.doneBtn} onPress={addEntry} />), headerShadowVisible: false
+                headerShown: false, ...TransitionPresets.ModalSlideFromBottomIOS,
             }} />
+            <View style={{ width: "90%", justifyContent: 'space-between', flexDirection: 'row', alignSelf: 'center', marginTop: 10 }}>
+                <TouchableOpacity onPress={addEntry} ><Text style={{ color: 'white', fontFamily: 'InterMedium', fontSize: 20, marginTop: 5 }}>save</Text></TouchableOpacity>
+                <Pressable onPress={() => { router.push('/new/4') }}>
+
+                    <MaterialIcons
+                        name="keyboard-arrow-down"
+                        size={40}
+                        color="white"
+                    />
+                </Pressable>
+
+            </View>
             <ScrollView style={styles.container}>
                 <Text style={styles.dateCtn}>{months[d.getMonth()] + " " + d.getDate() + ", " + d.getFullYear() + ' @ ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</Text>
                 <TextInput multiline={true} placeholderTextColor={'#808080'} placeholder="your title here..." style={styles.titleInput} value={title} onChangeText={setTitle} />

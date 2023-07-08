@@ -1,6 +1,6 @@
-import { TouchableOpacity, View, Text, Button, SafeAreaView, StyleSheet, ScrollView, Image, FlatList } from 'react-native'
+import { TouchableOpacity, View, Text, Button, SafeAreaView, StyleSheet, ScrollView, Image, Pressable } from 'react-native'
 import { useState, useEffect, useRef } from 'react'
-import { Stack } from 'expo-router'
+import { Stack, useRouter } from 'expo-router'
 import { Linking } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { Camera, CameraType } from 'expo-camera';
@@ -11,8 +11,11 @@ import { TransitionPresets } from '@react-navigation/stack';
 import { API, Auth, Storage } from 'aws-amplify'
 import * as mutations from '../../src/graphql/mutations'
 import { ENDPOINT_TEMP_STORE, ENDPOINT_TEMP } from '@env';
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+
 
 const Video = () => {
+    const router = useRouter()
     const [hasPermission, setHasPermission] = useState(null);
     const [cameraRef, setCameraRef] = useState(null)
     const [type, setType] = useState(CameraType.back);
@@ -20,6 +23,7 @@ const Video = () => {
     const [activeButton, setActiveButton] = useState('picture');
     const [firstImg, setFirstImg] = useState()
     const [id, setID] = useState("")
+
 
     useEffect(() => {
         Auth.currentUserInfo().then((user) => {
@@ -82,8 +86,8 @@ const Video = () => {
         // No permissions request is necessary for launching the image library
         let result = await ImagePicker.launchImageLibraryAsync({
             mediaTypes: ImagePicker.MediaTypeOptions.All,
-            allowsEditing: true,
-            aspect: [4, 3],
+            // allowsEditing: false,
+            // aspect: [5, 3],
             quality: 1,
         });
 
@@ -156,6 +160,8 @@ const Video = () => {
             // Handle any errors
         }
 
+        router.push('/')
+
     }
 
 
@@ -165,7 +171,16 @@ const Video = () => {
 
             <Stack.Screen options={{
                 headerStyle: { backgroundColor: 'black' }, title: '', header: () => (
-                    <View style={activeButton === "picture" ? styles.headerPicture : styles.headerVideo}></View>
+                    <View style={activeButton === "picture" ? styles.headerPicture : styles.headerVideo}>
+                        <Pressable onPress={() => { router.push('/new/4') }}>
+
+                            <MaterialIcons
+                                name="keyboard-arrow-down"
+                                size={40}
+                                color="white"
+                            />
+                        </Pressable>
+                    </View>
                 ), ...TransitionPresets.ModalSlideFromBottomIOS,
             }} />
             <View style={{ flex: 1, flexDirection: 'column' }}>
@@ -304,13 +319,19 @@ const styles = StyleSheet.create({
 
     headerVideo: {
         backgroundColor: 'black',
-        height: 100
+        height: 100,
+        justifyContent: 'center',
+        alignItems: 'center'
+
+
 
     },
 
     headerPicture: {
         backgroundColor: 'black',
-        height: 120
+        height: 120,
+        justifyContent: 'center',
+        alignItems: 'center'
 
     }
 

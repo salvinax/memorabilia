@@ -6,9 +6,12 @@ import { API, Auth } from "aws-amplify";
 import * as mutations from "../../src/graphql/mutations";
 import { ENDPOINT_TEMP, ENDPOINT_TEMP_STORE } from "@env";
 
+import { useRouter } from "expo-router";
+
 const SongItem = ({ data, prefix }) => {
   const [artistList, setArtistList] = useState("");
   const [id, setID] = useState("");
+  const router = useRouter();
   const [track, setTrack] = useState(() => {
     if (prefix) {
       //if it's a search result
@@ -101,6 +104,8 @@ const SongItem = ({ data, prefix }) => {
     console.log(artistList);
     console.log(track.name);
     console.log(track.external_urls.spotify);
+
+    router.push("/");
   };
 
   return (

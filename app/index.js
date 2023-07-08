@@ -6,15 +6,20 @@ import { useState, useEffect } from 'react';
 import { useAuthRequest } from 'expo-auth-session';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET, REDIRECT_URI } from '@env';
-
+import { FontAwesome5 } from '@expo/vector-icons';
 import { withAuthenticator } from 'aws-amplify-react-native';
+import { useFonts } from 'expo-font';
+import { useCallback, useRef } from "react";
+import GestureRecognizer from "react-native-swipe-gestures";
 
 import { encode as btoa } from 'base-64';
-
 import { COLORS } from '../constants'
-
 import { Amplify, Storage } from 'aws-amplify';
 import config from '../src/aws-exports';
+import * as SplashScreen from 'expo-splash-screen'
+// Instruct SplashScreen not to hide yet, we want to do this manually
+
+
 Amplify.configure({
     ...config,
     Analytics: {
@@ -22,10 +27,13 @@ Amplify.configure({
     },
 });
 
+
+
+
 //login with aws https://instamobile.io/mobile-development/react-native-aws-amplify/
 
 WebBrowser.maybeCompleteAuthSession(); //only for web doesn't do anything in native
-//https://developer.spotify.com/documentation/web-api/tutorials/code-flow 
+//https://developer.spotify.com/documentation/web-api/tutorials/code-flow
 
 //endpoint
 const discovery = {
@@ -66,7 +74,7 @@ const getToken = async (authCode) => {
             const expTime = new Date().getTime() + expiresIn * 1000
             console.log(accessToken)
 
-            //do a function for async storate try and catch errors 
+            //do a function for async storate try and catch errors
             await setTokens('token', accessToken)
             await setTokens('refreshToken', refreshToken)
             await setTokens('expirationToken', expTime.toString())
@@ -84,7 +92,7 @@ const setTokens = async (name, value) => {
         await AsyncStorage.setItem(name, value)
 
     } catch (error) {
-        //was not able to save in async storage 
+        //was not able to save in async storage
         console.log(error)
     }
 }
@@ -141,7 +149,7 @@ const getRefreshToken = async () => {
 
             const expTime = new Date().getTime() + expiresIn * 1000
 
-            //do a function for async storate try and catch errors 
+            //do a function for async storate try and catch errors
 
             await setTokens('token', newAccessToken)
 
@@ -162,15 +170,24 @@ const getRefreshToken = async () => {
 
 
 const Home = () => {
+
+    // const [fontsLoaded] = useFonts({
+    //     InterRegular: require('../assets/fonts/Inter-Regular.ttf'),
+    //     InterMedium: require('../assets/fonts/Inter-Medium.ttf'),
+    //     InterSemiBold: require('../assets/fonts/Inter-SemiBold.ttf'),
+    //     InterBold: require('../assets/fonts/Inter-Bold.ttf')
+    // })
+
+    const [isModalVisible, setIsModalVisible] = useState(false);
     const router = useRouter()
-    //implement authorization code flow 
+    //implement authorization code flow
     const [request, response, promptAsync] = useAuthRequest({
         clientId: SPOTIFY_CLIENT_ID,
         scopes: ['user-read-recently-played', 'playlist-modify-public'],
         usePKCE: false,
         redirectUri: REDIRECT_URI
 
-        //authorization code received 
+        //authorization code received
         //to do: get tokens access and refresh
 
     }, discovery);
@@ -184,6 +201,10 @@ const Home = () => {
         }
     }, [response]);
 
+    const onAddEntry = () => {
+        setIsModalVisible(true);
+    };
+
 
     // useEffect(() => {
     //     const checkToken = async () => {
@@ -193,36 +214,48 @@ const Home = () => {
     //         }
 
 
+    const onModalClose = () => {
+        setIsModalVisible(false);
+    };
 
 
 
-    //     }
 
-    // })
+
+
 
 
 
 
     return (
 
+
         <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.primary }}>
 
             <Stack.Screen options={{
-                headerStyle: { backgroundColor: 'white' },
-                headerRight: () => (
-                    <TouchableOpacity style={{ backgroundColor: 'green', width: 20, height: 20 }} onPress={() => { promptAsync() }} >
-                    </TouchableOpacity>
-                ),
-                headerLeft: () => (
-                    <View style={{ flexDirection: 'row', columnGap: '5' }}><TouchableOpacity style={{ backgroundColor: 'red', width: 20, height: 20 }} onPress={() => { router.push('/note/4') }} >
-                    </TouchableOpacity><TouchableOpacity style={{ backgroundColor: 'orange', width: 20, height: 20 }} onPress={() => { router.push('/camera/4') }} >
-                        </TouchableOpacity></View>
+                headerShown: false
+                // headerStyle: { backgroundColor: 'black' },
+                // headerShadowVisible: false,
 
-                ),
-                headerTitle: () => (
-                    <TouchableOpacity style={{ backgroundColor: 'blue', width: 20, height: 20 }} onPress={() => { router.push('/voice/4') }} >
-                    </TouchableOpacity>
-                )
+                // headerRight: () => (
+                //     <TouchableOpacity style={{ backgroundColor: 'green', width: 20, height: 20 }} onPress={() => { promptAsync() }} >
+                //     </TouchableOpacity>
+                // ),
+                // headerLeft: () => (
+                //     <View style={{ flexDirection: 'row', columnGap: '5' }}><TouchableOpacity style={{ backgroundColor: 'red', width: 20, height: 20 }} onPress={() => { router.push('/note/4') }} >
+                //     </TouchableOpacity><TouchableOpacity style={{ backgroundColor: 'orange', width: 20, height: 20 }} onPress={() => { router.push('/camera/4') }} >
+                //         </TouchableOpacity></View>
+
+                // ),
+                // headerTitle: () => (
+                //     <Text style={{ color: 'white', fontFamily: 'InterMedium', fontSize: 30, marginBottom: 20 }}  >
+                //         mem·o·ra·bil·i·a
+                //     </Text>
+                // )
+                // headerTitle: () => (
+                //     <TouchableOpacity style={{ backgroundColor: 'blue', width: 20, height: 20 }} onPress={() => { router.push('/voice/4') }} >
+                //     </TouchableOpacity>
+                // )
             }} />
 
             {/* options={{ headerShown: false }}  */}
@@ -231,6 +264,19 @@ const Home = () => {
             <View style={{ flex: 1 }}>
 
                 <CalendarOn />
+                <TouchableOpacity onPress={() => { router.push('/new/4') }} style={{ position: 'absolute', bottom: 5, alignSelf: 'center', backgroundColor: 'white', height: 50, width: 50, borderRadius: '50%', justifyContent: 'center', alignItems: 'center' }}>
+
+                    <FontAwesome5 name="plus" size={24} color="black" />
+
+                </TouchableOpacity>
+                {/* <GestureRecognizer
+                    style={{ flex: 1 }}
+                    // onSwipeUp={() => this.setModalVisible(true)}
+                    onSwipeDown={() => setIsModalVisible(false)}
+                >
+
+                    <EntryPicker isVisible={isModalVisible} onClose={onModalClose}></EntryPicker>
+                </GestureRecognizer> */}
 
             </View>
 
@@ -240,7 +286,6 @@ const Home = () => {
 
 
         </SafeAreaView >
-
 
     )
 }

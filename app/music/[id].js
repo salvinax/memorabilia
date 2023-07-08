@@ -4,6 +4,8 @@ import { Stack } from 'expo-router'
 import SearchBar from '../../components/music/searchBar'
 import { useState, useEffect } from 'react'
 import AsyncStorage from '@react-native-async-storage/async-storage'
+import { TransitionPresets } from '@react-navigation/stack';
+
 
 
 
@@ -71,7 +73,7 @@ const musicSearch = () => {
 
     return (
         <SafeAreaView style={{ flex: 1, backgroundColor: 'black' }}>
-            <Stack.Screen options={{ headerShown: false }} />
+            <Stack.Screen options={{ headerShown: false, ...TransitionPresets.ModalSlideFromBottomIOS, }} />
 
             <SearchBar data={tracks} />
 
