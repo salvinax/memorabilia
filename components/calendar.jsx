@@ -225,8 +225,6 @@ const CalendarOn = () => {
 
   useEffect(() => {
     setUserData(items);
-    console.log(date);
-    console.log(date.getMonth());
     // getUserInfo();
   }, []);
 
@@ -242,7 +240,7 @@ const CalendarOn = () => {
           pastScrollRange={date.getMonth()}
           futureScrollRange={12 - date.getMonth() - 1}
           scrollEnabled={true}
-          calendarHeight={380}
+          calendarHeight={400}
           theme={{
             textSectionTitleColor: "white",
             backgroundColor: "#000000",

@@ -8,6 +8,25 @@ import { SimpleLineIcons } from "@expo/vector-icons";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import { useRouter, Stack } from "expo-router";
 import { TransitionPresets } from "@react-navigation/stack";
+import * as WebBrowser from 'expo-web-browser'
+import { useAuthRequest } from 'expo-auth-session';
+import { SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET, REDIRECT_URI } from '@env';
+import { encode as btoa } from 'base-64';
+import AsyncStorage from '@react-native-async-storage/async-storage'
+import { Auth } from 'aws-amplify'
+
+
+
+WebBrowser.maybeCompleteAuthSession(); //only for web doesn't do anything in native
+//https://developer.spotify.com/documentation/web-api/tutorials/code-flow
+
+
+//endpoint
+const discovery = {
+    authorizationEndpoint: 'https://accounts.spotify.com/authorize',
+    tokenEndpoint: 'https://accounts.spotify.com/api/token',
+};
+
 
 const EntryPicker = () => {
     const router = useRouter();
@@ -41,6 +60,153 @@ const EntryPicker = () => {
     const changeMessage = (index) => {
         setMessage(data[index].message);
     };
+
+    async function signOut() {
+        try {
+            await Auth.signOut();
+            router.replace('/logIn')
+
+        } catch (error) {
+            console.log('Error signing out: ', error);
+        }
+    }
+
+
+
+    // const generateAuthorizationUrl = () => {
+    //     const clientId = 'YOUR_SPOTIFY_CLIENT_ID';
+    //     const redirectUri = encodeURIComponent('YOUR_REDIRECT_URI');
+    //     const scopes = 'YOUR_SCOPES'; // e.g., 'user-read-private user-read-email'
+    //     const authorizationEndpoint = `https://accounts.spotify.com/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&scope=${scopes}&response_type=token`;
+
+    //     return authorizationEndpoint;
+    // };
+
+    const [request, response, promptAsync] = useAuthRequest({
+        clientId: SPOTIFY_CLIENT_ID,
+        scopes: ['user-read-recently-played', 'playlist-modify-public'],
+        usePKCE: false,
+        redirectUri: REDIRECT_URI
+
+        //authorization code received
+        //to do: get tokens access and refresh
+
+    }, discovery);
+
+    useEffect(() => {
+        if (response?.type === 'success') {
+            const { code } = response.params;
+            getToken(code);
+            router.push("/music/" + "4");
+        }
+    }, [response]);
+
+
+
+
+    const getToken = async (authCode) => {
+
+        try {
+
+            const credsB64 = btoa(SPOTIFY_CLIENT_ID + ':' + SPOTIFY_CLIENT_SECRET);
+
+            const res = await fetch('https://accounts.spotify.com/api/token', {
+                method: 'POST',
+                headers: {
+                    Authorization: `Basic ${credsB64}`,
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `grant_type=authorization_code&code=${authCode}&redirect_uri=${REDIRECT_URI}`,
+            })
+            //buffer.toString('base64')
+
+            if (!res.ok) {
+                console.log('ERROR')
+            } else {
+
+                const resJson = await res.json()
+
+                const {
+                    access_token: accessToken,
+                    refresh_token: refreshToken,
+                    expires_in: expiresIn,
+                } = resJson;
+
+
+
+                const expTime = new Date().getTime() + expiresIn * 1000
+                console.log(accessToken)
+
+                //do a function for async storate try and catch errors
+                await setTokens('token', accessToken)
+                await setTokens('refreshToken', refreshToken)
+                await setTokens('expirationToken', expTime.toString())
+
+            }
+
+
+
+        } catch (err) {
+            console.log(err)
+
+        }
+    }
+
+    const setTokens = async (name, value) => {
+
+        try {
+            await AsyncStorage.setItem(name, value)
+
+        } catch (error) {
+            //was not able to save in async storage
+            console.log(error)
+        }
+    }
+
+
+    const retrieveTokens = async (name) => {
+
+        try {
+            const data = await AsyncStorage.getItem(name)
+
+            return data
+
+            //if you can't retrieve data then login again??
+
+        } catch (error) {
+            //was not able to retrieve data
+
+        }
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     return (
         <SafeAreaView style={{ flex: 1, backgroundColor: "black" }}>
@@ -121,7 +287,13 @@ const EntryPicker = () => {
                                 alignSelf: "center",
                             }}
                             onPress={() => {
-                                router.push(item.path + "4");
+                                if (item.id == 'spotify') {
+                                    promptAsync()
+                                } else {
+                                    router.push(item.path + "4");
+
+                                }
+
                             }}
                         >
                             <FontAwesome5 name={item.id} size={200} color="#F8F8F8" />
@@ -142,6 +314,7 @@ const EntryPicker = () => {
                 >
                     {message}
                 </Text>
+                <TouchableOpacity onPress={signOut}><Text style={{ color: 'white' }}>sign out</Text></TouchableOpacity>
             </View>
         </SafeAreaView>
     );

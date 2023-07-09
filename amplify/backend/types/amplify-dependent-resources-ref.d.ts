@@ -1,6 +1,6 @@
 export type AmplifyDependentResourcesAttributes = {
   "auth": {
-    "memorabiliacf7b5c96": {
+    "memorabiliaad23f5f7": {
       "AppClientID": "string",
       "AppClientIDWeb": "string",
       "IdentityPoolId": "string",

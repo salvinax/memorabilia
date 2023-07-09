@@ -126,7 +126,6 @@ const SongItem = ({ data, prefix }) => {
           {artistList}
         </Text>
       </View>
-      <Image style={styles.spotifyIcon} source={icons.spotify} />
     </TouchableOpacity>
   );
 };
@@ -157,15 +156,10 @@ const styles = StyleSheet.create({
     marginTop: 20,
     marginBottom: 7,
   },
-  searchImg: {
-    width: 30,
-    height: "100%",
-    marginLeft: 3,
-  },
+
   track: {
     width: "100%",
     flexDirection: "row",
-    justifyContent: "space-between",
   },
   trackImg: {
     width: 70,

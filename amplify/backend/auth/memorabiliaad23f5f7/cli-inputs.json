@@ -1,10 +1,10 @@
 {
   "version": "1",
   "cognitoConfig": {
-    "identityPoolName": "memorabiliacf7b5c96_identitypool_cf7b5c96",
+    "identityPoolName": "memorabiliaad23f5f7_identitypool_ad23f5f7",
     "allowUnauthenticatedIdentities": false,
-    "resourceNameTruncated": "memoracf7b5c96",
-    "userPoolName": "memorabiliacf7b5c96_userpool_cf7b5c96",
+    "resourceNameTruncated": "memoraad23f5f7",
+    "userPoolName": "memorabiliaad23f5f7_userpool_ad23f5f7",
     "autoVerifiedAttributes": [
       "email"
     ],
@@ -20,7 +20,8 @@
     "passwordPolicyMinLength": 8,
     "passwordPolicyCharacters": [],
     "requiredAttributes": [
-      "email"
+      "email",
+      "name"
     ],
     "aliasAttributes": [],
     "userpoolClientGenerateSecret": false,
@@ -31,15 +32,16 @@
     "userpoolClientReadAttributes": [
       "email"
     ],
-    "userpoolClientLambdaRole": "memoracf7b5c96_userpoolclient_lambda_role",
+    "userpoolClientLambdaRole": "memoraad23f5f7_userpoolclient_lambda_role",
     "userpoolClientSetAttributes": false,
-    "sharedId": "cf7b5c96",
-    "resourceName": "memorabiliacf7b5c96",
+    "sharedId": "ad23f5f7",
+    "resourceName": "memorabiliaad23f5f7",
     "authSelections": "identityPoolAndUserPool",
     "useDefault": "default",
     "usernameAttributes": [
       "email"
     ],
+    "triggers": {},
     "userPoolGroupList": [],
     "serviceName": "Cognito",
     "usernameCaseSensitive": false,

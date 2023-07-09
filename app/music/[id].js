@@ -1,4 +1,3 @@
-
 import { Text, View, SafeAreaView } from 'react-native'
 import { Stack } from 'expo-router'
 import SearchBar from '../../components/music/searchBar'
@@ -8,9 +7,14 @@ import { TransitionPresets } from '@react-navigation/stack';
 
 
 
-
 const musicSearch = () => {
     const [tracks, setTracks] = useState([])
+
+
+
+
+
+
 
     const retrieveTokens = async (name) => {
 
@@ -27,6 +31,15 @@ const musicSearch = () => {
         }
 
     }
+
+    useEffect(() => {
+        getTracks()
+    }, [])
+
+
+
+
+
 
 
     const getTracks = async () => {
@@ -66,10 +79,9 @@ const musicSearch = () => {
         }
     }
 
-    useEffect(() => {
-        getTracks()
 
-    }, [])
+    //implement authorization code flow
+
 
     return (
         <SafeAreaView style={{ flex: 1, backgroundColor: 'black' }}>

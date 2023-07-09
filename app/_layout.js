@@ -11,6 +11,8 @@ SplashScreen.preventAutoHideAsync().catch(() => {
 });
 const Layout = () => {
 
+    SplashScreen.preventAutoHideAsync()
+
 
     const [fontsLoaded] = useFonts({
         InterRegular: require('../assets/fonts/Inter-Regular.ttf'),
@@ -32,6 +34,8 @@ const Layout = () => {
     //     }
     //     prepare()
     // }, [])
+
+
 
     const onLayoutRootView = useCallback(async () => {
 
