@@ -6,7 +6,7 @@ import Carousel from "react-native-reanimated-carousel";
 import { useState, useEffect } from "react";
 import { SimpleLineIcons } from "@expo/vector-icons";
 import { TouchableOpacity } from "react-native-gesture-handler";
-import { useRouter, Stack } from "expo-router";
+import { useRouter, Stack, useLocalSearchParams } from "expo-router";
 import { TransitionPresets } from "@react-navigation/stack";
 import * as WebBrowser from 'expo-web-browser'
 import { useAuthRequest } from 'expo-auth-session';
@@ -32,22 +32,25 @@ const EntryPicker = () => {
     const router = useRouter();
     const date = new Date()
     const hours = date.getHours()
+    const userName = useLocalSearchParams()
+
+    console.log(userName)
     const data = [
         {
             id: "spotify",
             message: "sometimes words aren't enough. choose a song on Spotify.",
-            path: "/music/",
+            path: "/new/song",
         },
         {
             id: "camera",
             message: "a picture is worth 1000 words or so they say.",
-            path: "/camera/",
+            path: "/new/camera",
         },
-        { id: "pencil-alt", message: "words are cool too i guess", path: "/note/" },
+        { id: "pencil-alt", message: "words are cool too i guess", path: "/new/note" },
         {
             id: "microphone",
             message: "too lazy to type? record a voice memo.",
-            path: "/voice/",
+            path: "/new/voice",
         },
     ];
     const { width } = Dimensions.get("window");
@@ -200,14 +203,6 @@ const EntryPicker = () => {
 
 
 
-
-
-
-
-
-
-
-
     return (
         <SafeAreaView style={{ flex: 1, backgroundColor: "black" }}>
             <Stack.Screen
@@ -230,7 +225,7 @@ const EntryPicker = () => {
                                 width: "80%",
                             }}
                         >
-                            {hours < 12 ? 'Good Morning' : hours < 18 ? 'Good Afternoon' : 'Good Evening'} Salvina.
+                            {hours < 12 ? 'Good Morning' : hours < 18 ? 'Good Afternoon ' + userName.name : 'Good Evening ' + userName.name}.
                         </Text>
                         <Pressable onPress={() => { router.push('/') }}>
                             {/* <SimpleLineIcons name="arrow-down" size={30} color="white" /> */}
@@ -290,7 +285,7 @@ const EntryPicker = () => {
                                 if (item.id == 'spotify') {
                                     promptAsync()
                                 } else {
-                                    router.push(item.path + "4");
+                                    router.push(item.path);
 
                                 }
 
@@ -309,12 +304,12 @@ const EntryPicker = () => {
                         alignSelf: "center",
                         width: "80%",
                         textAlign: "center",
-                        marginTop: 50
+                        marginTop: 20
                     }}
                 >
                     {message}
                 </Text>
-                <TouchableOpacity onPress={signOut}><Text style={{ color: 'white' }}>sign out</Text></TouchableOpacity>
+                <TouchableOpacity onPress={signOut}><Text style={{ color: 'white', fontSize: 20, textAlign: 'center', marginTop: 100 }}>sign out</Text></TouchableOpacity>
             </View>
         </SafeAreaView>
     );

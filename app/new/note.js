@@ -77,7 +77,7 @@ const Note = () => {
             }} />
             <View style={{ width: "90%", justifyContent: 'space-between', flexDirection: 'row', alignSelf: 'center', marginTop: 10 }}>
                 <TouchableOpacity onPress={addEntry} ><Text style={{ color: 'white', fontFamily: 'InterMedium', fontSize: 20, marginTop: 5 }}>save</Text></TouchableOpacity>
-                <Pressable onPress={() => { router.push('/new/4') }}>
+                <Pressable onPress={() => { router.push('/new') }}>
 
                     <MaterialIcons
                         name="keyboard-arrow-down"

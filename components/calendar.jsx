@@ -9,8 +9,9 @@ import { useState, useEffect, createElement } from "react";
 import { TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
 
-const CalendarOn = () => {
+const CalendarOn = ({ setLoading }) => {
   const router = useRouter();
+  // const [loading, setLoading] = useState();
   const items = [
     {
       albumLink: null,
@@ -225,8 +226,14 @@ const CalendarOn = () => {
 
   useEffect(() => {
     setUserData(items);
+    // setLoading(true);
     // getUserInfo();
   }, []);
+
+  // const handleCalendarLayout = () => {
+  //   setLoading(true);
+  //   console.log("we done");
+  // };
 
   // useEffect(() => {
   //   // getUserInfo();
@@ -241,6 +248,10 @@ const CalendarOn = () => {
           futureScrollRange={12 - date.getMonth() - 1}
           scrollEnabled={true}
           calendarHeight={400}
+          // onVisibleMonthsChange={(months) => {
+          //   console.log("now these months are visible", months);
+
+          // }}
           theme={{
             textSectionTitleColor: "white",
             backgroundColor: "#000000",

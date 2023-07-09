@@ -70,7 +70,7 @@ const SearchBar = ({ data }) => {
       <Pressable
         style={{ alignSelf: "center" }}
         onPress={() => {
-          router.push("/new/4");
+          router.push("/new");
         }}
       >
         <MaterialIcons name="keyboard-arrow-down" size={40} color="white" />

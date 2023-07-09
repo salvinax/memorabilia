@@ -1,4 +1,4 @@
-import { Text, View, ScrollView, SafeAreaView, TouchableOpacity } from 'react-native';
+import { Text, View, ScrollView, SafeAreaView, TouchableOpacity, ActivityIndicator } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { Stack, useRouter, useLocation } from 'expo-router'
 import CalendarOn from '../components/calendar'
@@ -8,6 +8,7 @@ import { encode as btoa } from 'base-64';
 import { COLORS } from '../constants'
 import { Amplify, Storage, Auth } from 'aws-amplify';
 import config from '../src/aws-exports';
+
 
 
 
@@ -57,9 +58,8 @@ const Home = () => {
 
     const router = useRouter()
     const [auth, setAuth] = useState();
-
-
-
+    const [loading, setLoading] = useState(false)
+    const [name, setName] = useState('')
 
     const getRefreshToken = async () => {
 
@@ -139,10 +139,11 @@ const Home = () => {
 
     const checkUserSignedIn = async () => {
         Auth.currentAuthenticatedUser()
-            .then(() => {
+            .then((data) => {
                 setAuth(true)
-                console.log('auth')
-                console.log('hey')
+                setName(data.attributes.name)
+                console.log('name', data.attributes.name)
+
             }).catch((error) => {
                 setAuth(false);
                 console.log("error with auth:", error);
@@ -158,6 +159,16 @@ const Home = () => {
 
     }, [router]);
 
+    useEffect(() => {
+        if (loading) {
+            console.log('its true')
+        }
+
+    }, [loading])
+
+    const handleLayout = () => {
+        console.log('trigger')
+    }
 
 
 
@@ -169,13 +180,14 @@ const Home = () => {
             <Stack.Screen options={{
                 headerShown: false
             }} />
-            {auth && <View style={{ flex: 1 }}><CalendarOn />
-                <TouchableOpacity onPress={() => { router.push('/new/4') }} style={{ position: 'absolute', bottom: 50, alignSelf: 'center', backgroundColor: 'white', height: 50, width: 50, borderRadius: '50%', justifyContent: 'center', alignItems: 'center' }}>
-
+            {/* {!loading ? <ActivityIndicator size="large" color="white" />
+                : */}
+            <View style={{ flex: 1 }}>
+                <CalendarOn style={{}} />
+                <TouchableOpacity onPress={() => { router.push({ pathname: '/new', params: { name } }) }} style={{ position: 'absolute', bottom: 50, alignSelf: 'center', backgroundColor: 'white', height: 50, width: 50, borderRadius: '50%', justifyContent: 'center', alignItems: 'center' }}>
                     <FontAwesome5 name="plus" size={24} color="black" />
-
                 </TouchableOpacity>
-            </View>}
+            </View>
 
         </SafeAreaView>
     </>
@@ -196,11 +208,3 @@ const Home = () => {
 
 export default Home;
 
-
-
-{/* <CalendarOn />
-                <TouchableOpacity onPress={() => { router.push('/new/4') }} style={{ position: 'absolute', bottom: 5, alignSelf: 'center', backgroundColor: 'white', height: 50, width: 50, borderRadius: '50%', justifyContent: 'center', alignItems: 'center' }}>
-
-                    <FontAwesome5 name="plus" size={24} color="black" />
-
-                </TouchableOpacity> */}

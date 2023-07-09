@@ -193,7 +193,7 @@ const Voice = () => {
 
             <View style={{ justifyContent: 'center', alignItems: 'center' }}>
 
-                <Pressable onPress={() => { router.push('/new/4') }}>
+                <Pressable onPress={() => { router.push('/new') }}>
 
                     <MaterialIcons
                         name="keyboard-arrow-down"

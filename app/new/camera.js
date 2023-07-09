@@ -172,7 +172,7 @@ const Video = () => {
             <Stack.Screen options={{
                 headerStyle: { backgroundColor: 'black' }, title: '', header: () => (
                     <View style={activeButton === "picture" ? styles.headerPicture : styles.headerVideo}>
-                        <Pressable onPress={() => { router.push('/new/4') }}>
+                        <Pressable onPress={() => { router.push('/new') }}>
 
                             <MaterialIcons
                                 name="keyboard-arrow-down"
