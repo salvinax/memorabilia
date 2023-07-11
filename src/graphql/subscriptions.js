@@ -17,10 +17,10 @@ export const onCreateEntry = /* GraphQL */ `
       }
       text
       titleText
-      name
+      songName
       artists
       albumLink
-      songLink
+      songID
       createdAt
       updatedAt
       owner
@@ -43,10 +43,10 @@ export const onUpdateEntry = /* GraphQL */ `
       }
       text
       titleText
-      name
+      songName
       artists
       albumLink
-      songLink
+      songID
       createdAt
       updatedAt
       owner
@@ -69,10 +69,10 @@ export const onDeleteEntry = /* GraphQL */ `
       }
       text
       titleText
-      name
+      songName
       artists
       albumLink
-      songLink
+      songID
       createdAt
       updatedAt
       owner

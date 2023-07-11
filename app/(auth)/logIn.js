@@ -1,7 +1,7 @@
 import { View, Text, TextInput, TouchableOpacity, SafeAreaView } from "react-native";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Auth } from "aws-amplify";
-import { Stack, useRouter, useNavigation, BackHandler } from 'expo-router'
+import { Stack, useRouter, useNavigation } from 'expo-router'
 
 
 const Login = () => {

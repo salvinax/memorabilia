@@ -1,29 +1,20 @@
-import { Text, View, ScrollView, SafeAreaView, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, SafeAreaView, TouchableOpacity } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { Stack, useRouter, useLocation } from 'expo-router'
 import CalendarOn from '../components/calendar'
 import { useState, useEffect } from 'react';
 import { FontAwesome5 } from '@expo/vector-icons';
 import { encode as btoa } from 'base-64';
-import { COLORS } from '../constants'
 import { Amplify, Storage, Auth } from 'aws-amplify';
 import config from '../src/aws-exports';
 
-
-
-
+//login with aws https://instamobile.io/mobile-development/react-native-aws-amplify/
 Amplify.configure({
     ...config,
     Analytics: {
         disabled: true,
     },
 });
-
-
-
-
-//login with aws https://instamobile.io/mobile-development/react-native-aws-amplify/
-
 
 
 
@@ -153,23 +144,10 @@ const Home = () => {
     };
 
 
-
     useEffect(() => {
         checkUserSignedIn();
 
     }, [router]);
-
-    useEffect(() => {
-        if (loading) {
-            console.log('its true')
-        }
-
-    }, [loading])
-
-    const handleLayout = () => {
-        console.log('trigger')
-    }
-
 
 
     return (<>
@@ -183,26 +161,14 @@ const Home = () => {
             {/* {!loading ? <ActivityIndicator size="large" color="white" />
                 : */}
             <View style={{ flex: 1 }}>
-                <CalendarOn style={{}} />
-                <TouchableOpacity onPress={() => { router.push({ pathname: '/new', params: { name } }) }} style={{ position: 'absolute', bottom: 50, alignSelf: 'center', backgroundColor: 'white', height: 50, width: 50, borderRadius: '50%', justifyContent: 'center', alignItems: 'center' }}>
+                <CalendarOn />
+                <TouchableOpacity onPress={() => { router.push({ pathname: '/new', params: { name } }) }} style={{ position: 'absolute', bottom: 10, alignSelf: 'center', backgroundColor: 'white', height: 50, width: 50, borderRadius: '50%', justifyContent: 'center', alignItems: 'center' }}>
                     <FontAwesome5 name="plus" size={24} color="black" />
                 </TouchableOpacity>
             </View>
 
         </SafeAreaView>
     </>
-
-
-
-
-
-
-
-
-
-
-
-
     )
 }
 

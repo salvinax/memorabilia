@@ -5,12 +5,7 @@ input AMPLIFY {
 } # FOR TESTING ONLY!
 type Entry
   @model
-  @auth(
-    rules: [
-      { allow: owner, operations: [create, delete, update, read] }
-      { allow: public, operations: [read] }
-    ]
-  ) {
+  @auth(rules: [{ allow: owner, operations: [create, delete, update, read] }]) {
   date: AWSDate! @primaryKey
   type: String!
     @index(
@@ -22,10 +17,10 @@ type Entry
   mediaLink: S3Object
   text: String
   titleText: String
-  name: String
+  songName: String
   artists: String
   albumLink: String
-  songLink: String
+  songID: String
 }
 
 type S3Object {

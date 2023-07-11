@@ -6,14 +6,6 @@
     "defaultAuthType": {
       "mode": "AMAZON_COGNITO_USER_POOLS",
       "cognitoUserPoolId": "authmemorabiliaad23f5f7"
-    },
-    "additionalAuthTypes": [
-      {
-        "mode": "API_KEY",
-        "expirationTime": 90,
-        "apiKeyExpirationDate": "2023-10-07T00:07:44.207Z",
-        "keyDescription": "admin key memo"
-      }
-    ]
+    }
   }
 }

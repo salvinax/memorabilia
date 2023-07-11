@@ -1,4 +1,4 @@
-import { TouchableOpacity, View, Text, Button, SafeAreaView, StyleSheet, ScrollView, Image, Pressable } from 'react-native'
+import { TouchableOpacity, View, Text, Button, SafeAreaView, StyleSheet, Image, Pressable } from 'react-native'
 import { useState, useEffect, useRef } from 'react'
 import { Stack, useRouter } from 'expo-router'
 import { Linking } from 'react-native';
@@ -10,13 +10,11 @@ import * as VideoThumbnails from 'expo-video-thumbnails';
 import { TransitionPresets } from '@react-navigation/stack';
 import { API, Auth, Storage } from 'aws-amplify'
 import * as mutations from '../../src/graphql/mutations'
-import { ENDPOINT_TEMP_STORE, ENDPOINT_TEMP } from '@env';
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 
 
 const Video = () => {
     const router = useRouter()
-    const [hasPermission, setHasPermission] = useState(null);
     const [cameraRef, setCameraRef] = useState(null)
     const [type, setType] = useState(CameraType.back);
     const [recording, setRecording] = useState(false)
@@ -47,11 +45,12 @@ const Video = () => {
                     setFirstImg(media.uri)
                 } else if (media.mediaType == 'video') {
                     const fileUri = await MediaLibrary.getAssetInfoAsync(media.id)
+                    console.log('errro is here'.fileUri)
                     generateThumbnail(fileUri.localUri)
+
                 } else {
                     console.log('no media found in camera roll')
                 }
-
             }
         }
         getFirstImg()
@@ -97,69 +96,51 @@ const Video = () => {
     }
 
 
-    const addEntry = async (localUri) => {
+    const addEntry = async (imagePath) => {
 
-        // let yourDate = new Date()
-        // let entryDate = yourDate.toISOString().split('T')[0]
+        let yourDate = new Date()
+        let entryDate = yourDate.toISOString().split('T')[0]
 
-        let dates = '2020-12-26'
+        console.log(imagePath)
+        const imageExt = imagePath.split('.').pop()
+        console.log(imageExt)
+        let type = ""
+        if (activeButton == "picture") {
+            type = "image"
+        } else {
+            type = "video"
 
-        const key = id + '-' + dates
-
-        // const file = 'C:/Users/salvi/Downloads/videoplayback.mp4'
-        const file = localUri.uri
-
-        console.log(localUri.uri)
-
-        // try {
-        //     const store = await Storage.put(key, file)
-        //     console.log(store)
-        //     const response = await API.graphql({
-        //         query: mutations.createEntry,
-        //         variables: { input: { date: dates, type: "entry", contentType: activeButton, mediaLink: { bucket: "memos3", region: "us-east-1", key: key } } },
-        //     })
-        //     console.log(response)
-
-        // } catch (error) {
-        //     console.log('Not able to Create Post: ', error)
-        // }
-
-        const session = await Auth.currentSession();
-        const accessToken = session.getAccessToken().getJwtToken();
-
-        const query = mutations.createEntry
-        const endpoint = ENDPOINT_TEMP + '/graphql'
-        const variables = { input: { date: dates, type: "entry", contentType: activeButton, mediaLink: { bucket: "memos3", region: "us-east-1", key: key } } }
-
-        const requestOptions = {
-            method: 'POST',
-            headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ query, variables }),
-        };
-
-        const request1Options = {
-            method: 'POST',
-            headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
-            body: file,
-        };
-
-
-
-        try {
-            // const store = await Storage.put(key, localUri.uri)
-            // console.log(store)
-            const store = await fetch(`${ENDPOINT_TEMP_STORE}/public/${key}`, request1Options);
-            console.log(JSON.stringify(store))
-            const query = await fetch(endpoint, requestOptions);
-            console.log(JSON.stringify(query))
-            // const data = await response.json();
-            // console.log(data)
-            // console.log(response)
-        } catch (error) {
-            console.log(error)
-            // Handle any errors
         }
 
+        const imageMime = `${type}/${imageExt}`
+
+
+
+        console.log(imageMime)
+        console.log(imagePath)
+        console.log(imageExt)
+
+        let picture = await fetch(imagePath);
+        picture = await picture.blob()
+        const imageData = new File([picture], `${key}.${imageExt}`);
+
+        const key = id + '-' + entryDate + "." + imageExt
+
+        try {
+            const store = await Storage.put(key, imageData, {
+                contentType: imageMime
+
+            })
+            console.log(store)
+            const response = await API.graphql({
+                query: mutations.createEntry,
+                variables: { input: { date: entryDate, type: "entry", contentType: activeButton, mediaLink: { bucket: "memos3", region: "us-east-1", key: key } } },
+            })
+            console.log(response)
+
+        } catch (error) {
+            console.log('Not able to Create Entry: ', error)
+        }
         router.push('/')
 
     }
@@ -196,7 +177,6 @@ const Video = () => {
                         <TouchableOpacity onPress={() => { setActiveButton('video') }}><Text style={activeButton === "video" ? styles.activeButton : styles.normalButton}>VIDEO</Text></TouchableOpacity>
                     </View>
 
-                    {/* style={[styles.button, activeButton === 'camera' && styles.activeButton]} */}
 
 
                     <View style={{ width: '95%', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 20 }}>
@@ -207,13 +187,14 @@ const Video = () => {
 
                         <TouchableOpacity style={{ alignSelf: 'center' }} onPress={async () => {
                             if (cameraRef && activeButton == "picture") {
+                                // console.log(cameraRef)
                                 let photo = await cameraRef.takePictureAsync();
-                                addEntry(photo)
+                                addEntry(photo.uri)
                             } else if (cameraRef && activeButton == "video") {
                                 if (!recording) {
                                     setRecording(true);
                                     let video = await cameraRef.recordAsync();
-                                    addEntry(video)
+                                    addEntry(video.uri)
                                     console.log('we finished recording')
                                 } else {
                                     setRecording(false);

@@ -14,6 +14,12 @@
     "categories": {
       "auth": {
         "memorabiliaad23f5f7": {}
+      },
+      "api": {
+        "memorabilia": {}
+      },
+      "storage": {
+        "memostorage": {}
       }
     }
   }

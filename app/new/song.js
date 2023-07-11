@@ -11,11 +11,6 @@ const musicSearch = () => {
     const [tracks, setTracks] = useState([])
 
 
-
-
-
-
-
     const retrieveTokens = async (name) => {
 
         try {
@@ -35,9 +30,6 @@ const musicSearch = () => {
     useEffect(() => {
         getTracks()
     }, [])
-
-
-
 
 
 
@@ -78,9 +70,6 @@ const musicSearch = () => {
 
         }
     }
-
-
-    //implement authorization code flow
 
 
     return (

@@ -10,6 +10,7 @@ import { TransitionPresets } from '@react-navigation/stack';
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Ionicons } from '@expo/vector-icons';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 
 const oldEntry = () => {
@@ -22,7 +23,7 @@ const oldEntry = () => {
     const [finish, setFinish] = useState(false)
     const [sound, setSound] = useState();
     const [soundTime, setSoundTime] = useState()
-    const first = true
+    const [lay, setLay] = useState();
 
     useEffect(() => {
         return sound
@@ -34,20 +35,42 @@ const oldEntry = () => {
     }, [sound]);
 
 
+    const retrieveTokens = async (name) => {
+
+        try {
+            const data = await AsyncStorage.getItem(name)
+            return data
+
+        } catch (error) {
+            return null
+
+        }
+
+    }
+
+
+
 
     useEffect(() => {
-        if (item.contentType == "audio") {
-            loadRecording()
+        const wait = async () => {
+            const pic = await retrieveTokens(item.date)
+            if (item.contentType == 'audio') {
+                loadRecording(pic)
+            }
+
+            setLay(pic)
         }
+        wait()
 
     }, [])
 
+    useEffect(() => {
+        console.log(lay)
+    }
+        , [lay])
+
+
     const playBack = async () => {
-
-        // if (first) {
-        //     playRecording()
-        // }
-
         if (!pause && !finish) {
             //pause sound currently playing
             await sound.pauseAsync()
@@ -69,16 +92,22 @@ const oldEntry = () => {
     }
 
 
-    const loadRecording = async (uri) => {
+
+    const loadRecording = async (audioLink) => {
         //function that playback
+        console.log('urie', audioLink)
         console.log('Loading Sound');
-        const { sound } = await Audio.Sound.createAsync({ uri: 'http://codeskulptor-demos.commondatastorage.googleapis.com/descent/gotitem.mp3' })
+        await Audio.setAudioModeAsync({
+            playsInSilentModeIOS: true,
+        })
+        const { sound } = await Audio.Sound.createAsync({ uri: audioLink })
         sound.setOnPlaybackStatusUpdate(onPlaybackStatusUpdate);
         setSound(sound);
         const { durationMillis } = await sound.getStatusAsync();
+        setPause(true);
         setSoundTime(durationMillis);
         progressRef.current.pause();
-        setPause(true);
+
     }
 
     const onPlaybackStatusUpdate = async (playbackStatus) => {
@@ -108,6 +137,11 @@ const oldEntry = () => {
                     headerShown: false, ...TransitionPresets.ModalSlideFromBottomIOS
                 }}
             />
+
+
+
+
+
             {/* for notes */}
             <View style={{ alignSelf: 'center' }}>
                 <Pressable onPress={() => { router.push('/') }}>
@@ -126,30 +160,37 @@ const oldEntry = () => {
 
 
 
-
+            {/* for songs*/}
             {item?.contentType == 'song' && (<View style={{ justifyContent: 'center', alignItems: 'center', marginTop: 100, rowGap: 15 }}>
-                <Image style={{ height: 300, width: 300, borderRadius: 20 }} source={{ uri: "https://images.genius.com/3d7f4ece5c38275f6d91a75e31a88992.1000x1000x1.png" }} />
-                <Text style={{ color: 'white', fontFamily: 'InterMedium', fontSize: 19 }}>{item.name}</Text>
+                <Image style={{ height: 300, width: 300, borderRadius: 20 }} source={{ uri: 'https://' + item.albumLink }} />
+                <Text style={{ color: 'white', fontFamily: 'InterMedium', fontSize: 19 }}>{item.songName}</Text>
 
                 <Text style={{ color: "#E6D9D9", fontFamily: 'InterMedium', fontSize: 16, marginBottom: 40 }}>{item.artists}</Text>
-                <TouchableOpacity onPress={() => { Linking.openURL('spotify:track:' + item.songLink) }}><FontAwesome5 name="spotify" size={80} color="#F8F8F8" /></TouchableOpacity>
+                <TouchableOpacity onPress={() => { Linking.openURL('spotify:track:' + item.songID) }}><FontAwesome5 name="spotify" size={80} color="#F8F8F8" /></TouchableOpacity>
             </View>)}
 
 
-            {item?.contentType == 'picture' && <View style={{ alignItems: 'center', marginTop: 40 }}>
-                <Image style={{ width: '90%', height: "90%", borderRadius: 50 }} resizeMode='cover' source={{ uri: "https://i.pinimg.com/474x/32/9c/8a/329c8abaa2935b0bd1a286a210ab058d.jpg" }} />
+
+
+
+
+
+            {/* for picture */}
+            {item?.contentType == 'picture' && lay && <View style={{ alignItems: 'center', marginTop: 40 }}>
+                <Image style={{ width: '90%', height: "90%", borderRadius: 50 }} resizeMode='cover' source={{ uri: lay }} />
             </View>}
 
 
+            {/* for videos */}
             {
                 item?.contentType == 'video' &&
                 <View style={{ width: 390, height: 700, overflow: 'hidden', borderRadius: 50, alignSelf: 'center', alignItems: 'center', marginTop: 20, justifyContent: 'center' }}>
                     <Video
                         ref={video}
                         style={styles.video}
-                        source={
-                            require('C:/Users/salvi/repos/memorabilia-app/memorabilia/assets/vid.mp4')
-                        }
+                        source={{
+                            uri: lay
+                        }}
                         resizeMode={ResizeMode.CONTAIN}
                         isLooping
                         onPlaybackStatusUpdate={updateStatus}
@@ -166,6 +207,10 @@ const oldEntry = () => {
             }
 
 
+
+
+
+            {/* for audio */}
             {
                 item?.contentType == "audio" && sound
                 &&
@@ -188,8 +233,11 @@ const oldEntry = () => {
 
                 </View>
 
-
             }
+
+
+
+
         </SafeAreaView >
 
     )

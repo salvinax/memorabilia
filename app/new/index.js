@@ -32,9 +32,10 @@ const EntryPicker = () => {
     const router = useRouter();
     const date = new Date()
     const hours = date.getHours()
-    const userName = useLocalSearchParams()
+    const { width } = Dimensions.get("window");
+    const [username, setName] = useState(useLocalSearchParams())
+    const [message, setMessage] = useState()
 
-    console.log(userName)
     const data = [
         {
             id: "spotify",
@@ -53,8 +54,7 @@ const EntryPicker = () => {
             path: "/new/voice",
         },
     ];
-    const { width } = Dimensions.get("window");
-    const [message, setMessage] = useState();
+
 
     useEffect(() => {
         setMessage(data[0].message);
@@ -64,9 +64,11 @@ const EntryPicker = () => {
         setMessage(data[index].message);
     };
 
+
+
     async function signOut() {
         try {
-            await Auth.signOut();
+            await Auth.signOut({ global: true });
             router.replace('/logIn')
 
         } catch (error) {
@@ -74,16 +76,9 @@ const EntryPicker = () => {
         }
     }
 
+    useEffect(() => { console.log(username.name) }, [username])
 
 
-    // const generateAuthorizationUrl = () => {
-    //     const clientId = 'YOUR_SPOTIFY_CLIENT_ID';
-    //     const redirectUri = encodeURIComponent('YOUR_REDIRECT_URI');
-    //     const scopes = 'YOUR_SCOPES'; // e.g., 'user-read-private user-read-email'
-    //     const authorizationEndpoint = `https://accounts.spotify.com/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&scope=${scopes}&response_type=token`;
-
-    //     return authorizationEndpoint;
-    // };
 
     const [request, response, promptAsync] = useAuthRequest({
         clientId: SPOTIFY_CLIENT_ID,
@@ -100,7 +95,7 @@ const EntryPicker = () => {
         if (response?.type === 'success') {
             const { code } = response.params;
             getToken(code);
-            router.push("/music/" + "4");
+            router.push("/new/song");
         }
     }, [response]);
 
@@ -166,43 +161,6 @@ const EntryPicker = () => {
         }
     }
 
-
-    const retrieveTokens = async (name) => {
-
-        try {
-            const data = await AsyncStorage.getItem(name)
-
-            return data
-
-            //if you can't retrieve data then login again??
-
-        } catch (error) {
-            //was not able to retrieve data
-
-        }
-
-    }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     return (
         <SafeAreaView style={{ flex: 1, backgroundColor: "black" }}>
             <Stack.Screen
@@ -225,7 +183,7 @@ const EntryPicker = () => {
                                 width: "80%",
                             }}
                         >
-                            {hours < 12 ? 'Good Morning' : hours < 18 ? 'Good Afternoon ' + userName.name : 'Good Evening ' + userName.name}.
+                            {hours < 12 ? 'Good Morning ' + username.name : hours < 18 ? 'Good Afternoon ' + username.name : 'Good Evening ' + username.name}.
                         </Text>
                         <Pressable onPress={() => { router.push('/') }}>
                             {/* <SimpleLineIcons name="arrow-down" size={30} color="white" /> */}

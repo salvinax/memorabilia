@@ -12,9 +12,6 @@ import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { TransitionPresets } from '@react-navigation/stack';
 
 
-
-
-
 const Voice = () => {
     const router = useRouter()
     const [recording, setRecording] = useState();
@@ -39,72 +36,39 @@ const Voice = () => {
 
 
 
-    const addEntry = async () => {
+    const addEntry = async (audioUri) => {
 
-        // let yourDate = new Date()
-        // let entryDate = yourDate.toISOString().split('T')[0]
-        console.log('we here')
+        let yourDate = new Date()
+        let entryDate = yourDate.toISOString().split('T')[0]
+
+        const imageExt = audioUri.split('.').pop()
+        const audioMime = `audio/${imageExt}`
+
+        console.log(audioMime)
+        console.log(audioUri)
+        console.log(imageExt)
+
+        const key = id + '-' + entryDate + "." + imageExt
+        let audio = await fetch(audioUri);
+        audio = await audio.blob()
+        const audioData = new File([audio], `${key}.${imageExt}`);
+
+        try {
+            const store = await Storage.put(key, audioData, {
+                contentType: audioMime
+
+            })
+            console.log(store)
+            const response = await API.graphql({
+                query: mutations.createEntry,
+                variables: { input: { date: entryDate, type: "entry", contentType: 'audio', mediaLink: { bucket: "memos3", region: "us-east-1", key: key } } },
+            })
+            console.log(response)
+
+        } catch (error) {
+            console.log('Not able to Create Entry: ', error)
+        }
         router.push('/')
-
-        // let dates = '2020-02-01'
-
-        // const key = id + '-' + dates
-
-        // const file = uri
-        // console.log(file)
-
-        // const session = await Auth.currentSession();
-        // const accessToken = session.getAccessToken().getJwtToken();
-
-        // const query = mutations.createEntry
-        // const endpoint = ENDPOINT_TEMP + '/graphql'
-        // const variables = { input: { date: dates, type: "entry", contentType: 'audio', mediaLink: { bucket: "memos3", region: "us-east-1", key: key } } }
-
-        // const requestOptions = {
-        //     method: 'POST',
-        //     headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
-        //     body: JSON.stringify({ query, variables }),
-        // };
-
-        // const request1Options = {
-        //     method: 'POST',
-        //     headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
-        //     body: file,
-        // };
-
-
-        // try {
-        //     // const store = await Storage.put(key, localUri.uri)
-        //     // console.log(store)
-        //     const store = await fetch(`${ENDPOINT_TEMP_STORE}/public/${key}`, request1Options);
-        //     console.log(JSON.stringify(store))
-        //     const query = await fetch(endpoint, requestOptions);
-        //     console.log(JSON.stringify(query))
-        //     // const data = await response.json();
-        //     // console.log(data)
-        //     // console.log(response)
-        // } catch (error) {
-        //     console.log(error)
-        //     // Handle any errors
-        // }
-
-
-
-
-
-
-        // try {
-        //     const store = await Storage.put(key, file)
-        //     console.log(store)
-        //     const response = await API.graphql({
-        //         query: mutations.createEntry,
-        //         variables: { input: { date: dates, type: "entry", contentType: "Audio", mediaLink: { bucket: "memos3", region: "us-east-1", key: key } } },
-        //     })
-        //     console.log(response)
-
-        // } catch (error) {
-        //     console.log('Not able to Create Post: ', error)
-        // }
 
     }
 

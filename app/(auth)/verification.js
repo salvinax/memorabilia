@@ -18,9 +18,6 @@ const Verification = () => {
     const [error, setError] = useState('')
     const router = useRouter()
 
-
-
-
     async function confirmSignUp() {
         console.log(username)
         try {

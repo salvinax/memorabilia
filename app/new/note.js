@@ -20,55 +20,35 @@ const Note = () => {
 
     const addEntry = async () => {
 
-        // let yourDate = new Date()
-        // let entryDate = yourDate.toISOString().split('T')[0]
-
-        // try {
-        //     const response = await API.graphql({
-        //         query: mutations.createEntry,
-        //         variables: { input: { date: entryDate, type: "entry", contentType: "Text", text: text, titleText: title } }
-
-        //     })
-        //     console.log(response)
-
-        // } catch (error) {
-        //     console.log('Not able to Create Post: ', error)
-        // }
-
-        // }
+        let yourDate = new Date()
+        let entryDate = yourDate.toISOString().split('T')[0]
 
 
-        //ran into issue: local api did not want to connect to expo server on ios device - conflict between emulator localhost and server localhost getting network error
-        //could not call locally hosted server from expo
-        //solution instead of using API function from aws amplify use fetch instead, and set up a tunnel using ngrok were exposing server on localhost to the web where
-        //expo can access it ngrok http 192.168.56.1:20002 => get a link to use as fetch endpoint
-        //then i was getting a 404 error i added /graphql to the url and the request went through 
-
-        const session = await Auth.currentSession();
-        const accessToken = session.getAccessToken().getJwtToken();
-
-
-        const query = mutations.createEntry
-        const endpoint = ENDPOINT_TEMP + '/graphql'
-        const variables = { input: { date: '2020-06-07', type: "entry", contentType: "text", text: text, titleText: title } }
-
-        const requestOptions = {
-            method: 'POST',
-            headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ query, variables }),
-        };
 
         try {
-            console.log('we trying')
-            const response = await fetch(endpoint, requestOptions);
-            console.log(JSON.stringify(response))
+            const response = await API.graphql({
+                query: mutations.createEntry,
+                variables: { input: { date: entryDate, type: "entry", contentType: "Text", text: text, titleText: title } }
+
+            })
+            console.log(response)
+
         } catch (error) {
-            console.log(error)
-            // Handle any errors
+            console.log('Not able to Create Post: ', error)
         }
 
         router.push('/')
+
     }
+
+
+    //ran into issue: local api did not want to connect to expo server on ios device - conflict between emulator localhost and server localhost getting network error
+    //could not call locally hosted server from expo
+    //solution instead of using API function from aws amplify use fetch instead, and set up a tunnel using ngrok were exposing server on localhost to the web where
+    //expo can access it ngrok http 192.168.56.1:20002 => get a link to use as fetch endpoint
+    //then i was getting a 404 error i added /graphql to the url and the request went through 
+
+
     return (
 
         <SafeAreaView style={{ flex: 1, backgroundColor: 'black' }}>

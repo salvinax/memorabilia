@@ -41,71 +41,38 @@ const SongItem = ({ data, prefix }) => {
   }, []);
 
   const addEntry = async () => {
-    let dates = "2020-02-06";
+    let yourDate = new Date();
+    let entryDate = yourDate.toISOString().split("T")[0];
 
-    const key = id + "-" + dates;
-
-    const file = track.album.images[0].url;
-
-    const session = await Auth.currentSession();
-    const accessToken = session.getAccessToken().getJwtToken();
-
-    const query = mutations.createEntry;
-    const endpoint = ENDPOINT_TEMP + "/graphql";
-    const variables = {
-      input: {
-        date: dates,
-        type: "entry",
-        contentType: "song",
-        songLink: track.external_urls.spotify,
-        name: track.name,
-        artists: artistList,
-        mediaLink: { bucket: "memos3", region: "us-east-1", key: key },
-      },
-    };
-
-    const requestOptions = {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ query, variables }),
-    };
-
-    const request1Options = {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        "Content-Type": "application/json",
-      },
-      body: file,
-    };
+    let pictureLink = track.album.images[0].url;
+    pictureLink = pictureLink.substring(8);
 
     try {
-      // const store = await Storage.put(key, localUri.uri)
-      // console.log(store)
-      const store = await fetch(
-        `${ENDPOINT_TEMP_STORE}/public/${key}`,
-        request1Options
-      );
-      console.log(JSON.stringify(store));
-      const query = await fetch(endpoint, requestOptions);
-      console.log(JSON.stringify(query));
-      // const data = await response.json();
-      // console.log(data)
-      // console.log(response)
+      const response = await API.graphql({
+        query: mutations.createEntry,
+        variables: {
+          input: {
+            date: entryDate,
+            type: "entry",
+            contentType: "song",
+            songID: track.id,
+            songName: track.name,
+            artists: artistList,
+            albumLink: pictureLink,
+          },
+        },
+      });
+
+      console.log(response);
     } catch (error) {
-      console.log(error);
-      // Handle any errors
+      console.log("Not able to Create Entry: ", error);
     }
-
-    console.log(track.album.images[0].url);
-    console.log(artistList);
-    console.log(track.name);
-    console.log(track.external_urls.spotify);
-
     router.push("/");
+
+    // console.log(pictureLink);
+    // console.log(artistList);
+    // console.log(track.name);
+    // console.log(track.id);
   };
 
   return (

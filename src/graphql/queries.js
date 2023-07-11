@@ -14,10 +14,10 @@ export const getEntry = /* GraphQL */ `
       }
       text
       titleText
-      name
+      songName
       artists
       albumLink
-      songLink
+      songID
       createdAt
       updatedAt
       owner
@@ -45,10 +45,10 @@ export const listEntries = /* GraphQL */ `
         contentType
         text
         titleText
-        name
+        songName
         artists
         albumLink
-        songLink
+        songID
         createdAt
         updatedAt
         owner
@@ -80,13 +80,18 @@ export const entryByDate = /* GraphQL */ `
         contentType
         text
         titleText
-        name
+        songName
         artists
         albumLink
-        songLink
+        songID
         createdAt
         updatedAt
         owner
+        mediaLink {
+          bucket
+          key
+          region
+        }
       }
       nextToken
     }
