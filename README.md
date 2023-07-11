@@ -21,7 +21,7 @@ mem·o·ra·bil·i·a is a full-stack mobile application for personal journaling
      <li> AWS Appsync</li>
 </ul>
 
-# Inspiration
+# Inspo
 
 When I was younger I refused to have pictures of me taken, so I don't have much to look back on, which is really sad😢. After seeing this tweet a while ago, I'm making an effort to take more pictures/videos of my daily life and keep a journal. But logging your life and how you feel can sometimes feel like a chore, which is why I decided to make an app that can make journaling slightly easier.
 
