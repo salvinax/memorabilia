@@ -36,4 +36,3 @@ amplifytools.xcconfig
 .secret-*
 **.sample
 #amplify-do-not-edit-end
-amplify/backend/api/memorabilia/resolvers
