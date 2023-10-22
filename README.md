@@ -7,13 +7,12 @@ mem·o·ra·bil·i·a is a full-stack mobile application for personal journaling
 # Design
 
 <p align="center">
-<img src="https://github.com/salvinax/memorabilia/assets/113158430/2d2df797-1639-412e-bec0-7431f38f1555" width=300/>
-<img src="https://github.com/salvinax/memorabilia/assets/113158430/70323dbf-52ef-4dd7-b8e0-048a84ba00d8" width=300/>
-<img src="https://github.com/salvinax/memorabilia/assets/113158430/09ed5624-8ade-4bd8-a1db-13d18adf7760" width=300/>
-
+<img src="https://github.com/salvinax/memorabilia/assets/113158430/f30f14ef-b8e7-46e2-8fa3-91207ff629d4" width=200/>
+<img src="https://github.com/salvinax/memorabilia/assets/113158430/c492fff0-b182-4eef-af79-e141c821d5a9" width=200/>
+<img src="https://github.com/salvinax/memorabilia/assets/113158430/cc6f143c-f338-419e-84d9-17cd6751aa55" width=200/>
+ 
 </p>
 
-[See complete design in Figma](https://www.figma.com/file/a8eunLYaYYBIZc4SthCWDJ/mem%C2%B7o%C2%B7ra%C2%B7bil%C2%B7i%C2%B7a?type=design&node-id=0%3A1&mode=design&t=c3ypwPMfx3xnwlRS-1)
 
 # Technologies
 
