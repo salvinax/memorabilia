@@ -5,86 +5,48 @@ import { useState, useEffect } from 'react'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { TransitionPresets } from '@react-navigation/stack';
 
-
-
-const musicSearch = () => {
+// Search Music on Spotify
+const MusicSearch = () => {
     const [tracks, setTracks] = useState([])
 
-
-    const retrieveTokens = async (name) => {
-
-        try {
-            const data = await AsyncStorage.getItem(name)
-
-            return data
-
-            //if you can't retrieve data then login again??
-
-        } catch (error) {
-            //was not able to retrieve data
-
-        }
-
-    }
-
     useEffect(() => {
-        getTracks()
-    }, [])
+        (async () => {
 
-
-
-
-    const getTracks = async () => {
-
-        const token = await retrieveTokens('token')
-
-        const tracks = await fetch('https://api.spotify.com/v1/me/player/recently-played?limit=10', {
-
-            headers: {
-                Authorization: 'Bearer ' + token
-            }
-        })
-
-        if (!tracks.ok) {
-            console.log(tracks)
-            console.log('no data')
-        } else {
-            const songData = await tracks.json()
-
-
-            // console.log(songData.items)
-            // songData.items.map((item) => {
-            //     console.log(item.track.id)
-            // })
-
-            songData.items = songData.items.filter((item, index) => {
-                return index == songData.items.findIndex(obj => {
-                    return obj.track.id === item.track.id
+            try {
+                const token = await AsyncStorage.getItem('token')
+                const tracks = await fetch('https://api.spotify.com/v1/me/player/recently-played?limit=10', {
+                    headers: {
+                        Authorization: 'Bearer ' + token
+                    }
                 })
-            })
-            //if indexes don't match up that means that there is already an occurence 
 
+                if (!tracks.ok) {
+                    throw new Error(tracks.statusText)
+                }
 
-            setTracks(songData)
+                const songData = await tracks.json()
 
+                songData.items = songData.items.filter((item, index) => {
+                    return index == songData.items.findIndex(obj => {
+                        return obj.track.id === item.track.id
+                    })
+                })
 
-        }
-    }
+                setTracks(songData)
 
+            } catch (error) {
+                console.log('ERROR retrieving recently played songs: ', error)
+            }
+        })()
+    }, [])
 
     return (
         <SafeAreaView style={{ flex: 1, backgroundColor: 'black' }}>
             <Stack.Screen options={{ headerShown: false, ...TransitionPresets.ModalSlideFromBottomIOS, }} />
-
             <SearchBar data={tracks} />
-
-
-
         </SafeAreaView>
-
-
     )
 }
 
 
-export default musicSearch;
+export default MusicSearch;

@@ -10,7 +10,6 @@ module.exports = function (api) {
         "path": ".env",
         "blocklist": null,
         "allowlist": null,
-
         "safe": false,
         "allowUndefined": true,
         "verbose": false
@@ -26,8 +25,7 @@ module.exports = function (api) {
       //     allowUndefined: false
       //   }
       // ],
-      "react-native-reanimated/plugin",
-      require.resolve("expo-router/babel"),
+      "react-native-reanimated/plugin"
     ],
   };
 };

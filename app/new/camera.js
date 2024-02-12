@@ -1,86 +1,101 @@
-import { TouchableOpacity, View, Text, Button, SafeAreaView, StyleSheet, Image, Pressable } from 'react-native'
-import { useState, useEffect, useRef } from 'react'
-import { Stack, useRouter } from 'expo-router'
-import { Linking } from 'react-native';
-import * as ImagePicker from 'expo-image-picker';
-import { Camera, CameraType } from 'expo-camera';
-import { Ionicons } from '@expo/vector-icons';
-import * as MediaLibrary from 'expo-media-library'
-import * as VideoThumbnails from 'expo-video-thumbnails';
-import { TransitionPresets } from '@react-navigation/stack';
-import { API, Auth, Storage } from 'aws-amplify'
-import * as mutations from '../../src/graphql/mutations'
+import {
+    TouchableOpacity,
+    View,
+    Text,
+    SafeAreaView,
+    StyleSheet,
+    Image,
+    Pressable,
+} from "react-native";
+import { useState, useEffect } from "react";
+import { Stack, useRouter } from "expo-router";
+import * as ImagePicker from "expo-image-picker";
+import { Camera, CameraType } from "expo-camera";
+import { Ionicons } from "@expo/vector-icons";
+import * as MediaLibrary from "expo-media-library";
+import * as VideoThumbnails from "expo-video-thumbnails";
+import { TransitionPresets } from "@react-navigation/stack";
+import { API, Auth, Storage } from "aws-amplify";
+import * as mutations from "../../src/graphql/mutations";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 
-
 const Video = () => {
-    const router = useRouter()
-    const [cameraRef, setCameraRef] = useState(null)
+    const router = useRouter();
+    const [cameraRef, setCameraRef] = useState(null);
     const [type, setType] = useState(CameraType.back);
-    const [recording, setRecording] = useState(false)
-    const [activeButton, setActiveButton] = useState('picture');
-    const [firstImg, setFirstImg] = useState()
-    const [id, setID] = useState("")
+    const [permission, requestPermission] = Camera.useCameraPermissions();
+    const [recording, setRecording] = useState(false);
+    const [activeButton, setActiveButton] = useState("picture"); // or video mode
+    const [firstImg, setFirstImg] = useState();
+    const [id, setID] = useState("");
 
-
+    // Retrieve Cognito user ID
     useEffect(() => {
-        Auth.currentUserInfo().then((user) => {
-            setID(user.attributes.sub)
+        Auth.currentUserInfo()
+            .then((user) => {
+                setID(user.attributes.sub);
+            })
+            .catch((error) => {
+                console.log("Auth Error", error);
+            });
+    }, []);
 
-        }).catch((error) => {
-            console.log('Auth Error', error)
-        })
-
-
-    }, [])
-
+    // Retrieves a screenshot of first picture/video in camera roll
     useEffect(() => {
-        const getFirstImg = async () => {
-            const { status } = await MediaLibrary.requestPermissionsAsync();
-            const { assets } = await MediaLibrary.getAssetsAsync({ first: 1, mediaType: ['photo', 'video'], sortBy: [[MediaLibrary.SortBy.creationTime, false]] });
+        (async () => {
+            try {
+                const { status } = await MediaLibrary.requestPermissionsAsync();
+                if (status) {
 
-            if (assets.length > 0) {
-                const media = assets[0]
-                if (media.mediaType == 'photo') {
-                    setFirstImg(media.uri)
-                } else if (media.mediaType == 'video') {
-                    const fileUri = await MediaLibrary.getAssetInfoAsync(media.id)
-                    console.log('errro is here'.fileUri)
-                    generateThumbnail(fileUri.localUri)
+                    const { assets } = await MediaLibrary.getAssetsAsync({
+                        first: 1,
+                        mediaType: ["photo", "video"],
+                        sortBy: [[MediaLibrary.SortBy.creationTime, false]],
+                    });
 
-                } else {
-                    console.log('no media found in camera roll')
+                    if (assets.length > 0) {
+                        const media = assets[0];
+
+                        if (media.mediaType == "photo") {
+                            setFirstImg(media.uri);
+                        } else if (media.mediaType == "video") {
+                            const fileUri = await MediaLibrary.getAssetInfoAsync(media.id);
+                            generateThumbnail(fileUri.localUri);
+                        } else {
+                            console.log("No media found in camera roll");
+                        }
+                    }
                 }
+            } catch (e) {
+                console.log('Error with MediaLibrary', e)
             }
-        }
-        getFirstImg()
-    }, [])
 
+        })();
+    }, []);
+
+
+    // Create video thumbnail that will be shown in bottom left corner
     const generateThumbnail = async (uriVid) => {
         try {
-            const { uri } = await VideoThumbnails.getThumbnailAsync(
-                uriVid,
-                {
-                    time: 10,
-                }
-            );
+            const { uri } = await VideoThumbnails.getThumbnailAsync(uriVid, {
+                time: 100,
+            });
             setFirstImg(uri);
         } catch (e) {
             console.warn(e);
         }
     };
 
-
-
+    // Change camera orientation
     const toggleCamera = async () => {
-        setType(current => current === CameraType.back
-            ? CameraType.front
-            : CameraType.back
+        setType((current) =>
+            current === CameraType.back ? CameraType.front : CameraType.back
         );
 
         setRecording(false);
-    }
+    };
 
+    // Open user's camera roll and allow them to pick an image/video for their daily entry
     const pickMedia = async () => {
         // No permissions request is necessary for launching the image library
         let result = await ImagePicker.launchImageLibraryAsync({
@@ -93,232 +108,317 @@ const Video = () => {
         if (!result.canceled) {
             addEntry(result.assets[0].uri);
         }
-    }
+    };
 
 
+    // Add video/camera entry to calendar
     const addEntry = async (imagePath) => {
+        let yourDate = new Date();
+        let entryDate = yourDate.toISOString().split("T")[0];
 
-        let yourDate = new Date()
-        let entryDate = yourDate.toISOString().split('T')[0]
+        // Extract file extension
+        const imageExt = imagePath.split(".").pop();
 
-        console.log(imagePath)
-        const imageExt = imagePath.split('.').pop()
-        console.log(imageExt)
-        let type = ""
+        // Determine Media Type
+        let type = "";
         if (activeButton == "picture") {
-            type = "image"
+            type = "image";
         } else {
-            type = "video"
-
+            type = "video";
         }
 
-        const imageMime = `${type}/${imageExt}`
-
-
-
-        console.log(imageMime)
-        console.log(imagePath)
-        console.log(imageExt)
-
-        let picture = await fetch(imagePath);
-        picture = await picture.blob()
-        const imageData = new File([picture], `${key}.${imageExt}`);
-
-        const key = id + '-' + entryDate + "." + imageExt
+        const imageMime = `${type}/${imageExt}`;
 
         try {
-            const store = await Storage.put(key, imageData, {
-                contentType: imageMime
+            let picture = await fetch(imagePath);
+            picture = await picture.blob();
+            const imageData = new File([picture], `${key}.${imageExt}`);
 
-            })
-            console.log(store)
+            const key = id + "-" + entryDate + "." + imageExt;
+
+            const store = await Storage.put(key, imageData, {
+                contentType: imageMime,
+            });
+
             const response = await API.graphql({
                 query: mutations.createEntry,
-                variables: { input: { date: entryDate, type: "entry", contentType: activeButton, mediaLink: { bucket: "memos3", region: "us-east-1", key: key } } },
-            })
-            console.log(response)
+                variables: {
+                    input: {
+                        date: entryDate,
+                        type: "entry",
+                        contentType: activeButton,
+                        mediaLink: { bucket: "memos3", region: "us-east-1", key: key },
+                    },
+                },
+            });
 
+            console.log(response);
         } catch (error) {
-            console.log('Not able to Create Entry: ', error)
+            console.log("Not able to Create Entry: ", error);
+            // Create modal to let user know there was a failure
         }
-        router.push('/')
 
-    }
+        // Either way return to homepage
+        router.replace("/");
+    };
 
 
-
+    // Check for Camera permissions, if user did not press allow -> 
+    // Redirect user to settings to enable camera and media permissions 
     return (
-        <SafeAreaView style={{ flex: 1, backgroundColor: 'black' }}>
-
-            <Stack.Screen options={{
-                headerStyle: { backgroundColor: 'black' }, title: '', header: () => (
-                    <View style={activeButton === "picture" ? styles.headerPicture : styles.headerVideo}>
-                        <Pressable onPress={() => { router.push('/new') }}>
-
-                            <MaterialIcons
-                                name="keyboard-arrow-down"
-                                size={40}
-                                color="white"
-                            />
-                        </Pressable>
-                    </View>
-                ), ...TransitionPresets.ModalSlideFromBottomIOS,
-            }} />
-            <View style={{ flex: 1, flexDirection: 'column' }}>
-                <Camera style={activeButton === "picture" ? styles.cameraLengthPic : styles.cameraLengthVid} type={type} ref={ref => {
-                    setCameraRef(ref);
-                }}>
-                </Camera>
-
-                <View style={activeButton === "video" ? styles.videoBottom : styles.pictureBottom}>
-
-                    <View style={{ flexDirection: 'row', justifyContent: 'center', columnGap: 30, marginTop: 20 }}>
-                        <TouchableOpacity onPress={() => { setActiveButton('picture') }}><Text style={activeButton === "picture" ? styles.activeButton : styles.normalButton}>PICTURE</Text></TouchableOpacity>
-                        <TouchableOpacity onPress={() => { setActiveButton('video') }}><Text style={activeButton === "video" ? styles.activeButton : styles.normalButton}>VIDEO</Text></TouchableOpacity>
-                    </View>
-
-
-
-                    <View style={{ width: '95%', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 20 }}>
-                        <TouchableOpacity onPress={pickMedia}>
-                            {firstImg && <Image source={{ uri: firstImg }} style={{ width: 50, height: 50, borderRadius: 10 }} />}
-                        </TouchableOpacity>
-
-
-                        <TouchableOpacity style={{ alignSelf: 'center' }} onPress={async () => {
-                            if (cameraRef && activeButton == "picture") {
-                                // console.log(cameraRef)
-                                let photo = await cameraRef.takePictureAsync();
-                                addEntry(photo.uri)
-                            } else if (cameraRef && activeButton == "video") {
-                                if (!recording) {
-                                    setRecording(true);
-                                    let video = await cameraRef.recordAsync();
-                                    addEntry(video.uri)
-                                    console.log('we finished recording')
-                                } else {
-                                    setRecording(false);
-                                    cameraRef.stopRecording();
-                                }
+        <SafeAreaView style={{ flex: 1, backgroundColor: "black" }}>
+            <Stack.Screen
+                options={{
+                    headerStyle: { backgroundColor: "black" },
+                    title: "",
+                    header: () => (
+                        <View
+                            style={
+                                activeButton === "picture"
+                                    ? styles.headerPicture
+                                    : styles.headerVideo
                             }
-                        }}>
-                            <View style={styles.recordButtonOutline}
+                        >
+                            <Pressable
+                                onPress={() => {
+                                    router.back()
+                                }}
                             >
-                                <View style={activeButton === "picture" ? styles.picButton : recording ? styles.recButton : styles.vidButton} >
+                                <MaterialIcons
+                                    name="keyboard-arrow-down"
+                                    size={40}
+                                    color="white"
+                                />
+                            </Pressable>
+                        </View>
+                    ),
+                    ...TransitionPresets.ModalSlideFromBottomIOS,
+                }}
+            />
+
+            {!permission?.granted ?
+                <View style={{ alignItems: "center", flex: 1, justifyContent: "center" }}>
+                    <Text style={styles.textCamera}>Camera Permissions Not Granted</Text>
+                    <TouchableOpacity style={styles.errorBtn} onPress={requestPermission}><Text>Request Permission</Text></TouchableOpacity>
+                </View> :
+
+                <View style={{ flex: 1, flexDirection: "column" }}>
+                    <Camera
+                        style={
+                            activeButton === "picture"
+                                ? styles.cameraLengthPic
+                                : styles.cameraLengthVid
+                        }
+                        type={type}
+                        ref={(ref) => {
+                            setCameraRef(ref);
+                        }}
+                    ></Camera>
+
+                    <View
+                        style={
+                            activeButton === "video" ? styles.videoBottom : styles.pictureBottom
+                        }
+                    >
+                        <View
+                            style={{
+                                flexDirection: "row",
+                                justifyContent: "center",
+                                columnGap: 30,
+                                marginTop: 20,
+                            }}
+                        >
+                            <TouchableOpacity
+                                onPress={() => {
+                                    setActiveButton("picture");
+                                }}
+                            >
+                                <Text
+                                    style={
+                                        activeButton === "picture"
+                                            ? styles.activeButton
+                                            : styles.normalButton
+                                    }
+                                >
+                                    PICTURE
+                                </Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                onPress={() => {
+                                    setActiveButton("video");
+                                }}
+                            >
+                                <Text
+                                    style={
+                                        activeButton === "video"
+                                            ? styles.activeButton
+                                            : styles.normalButton
+                                    }
+                                >
+                                    VIDEO
+                                </Text>
+                            </TouchableOpacity>
+                        </View>
+
+                        <View
+                            style={{
+                                width: "95%",
+                                flexDirection: "row",
+                                justifyContent: "space-between",
+                                alignItems: "center",
+                                marginTop: 20,
+                            }}
+                        >
+                            <TouchableOpacity onPress={pickMedia}>
+                                {firstImg && (
+                                    <Image
+                                        source={{ uri: firstImg }}
+                                        style={{ width: 50, height: 50, borderRadius: 10 }}
+                                    />
+                                )}
+                            </TouchableOpacity>
+
+                            <TouchableOpacity
+                                style={{ alignSelf: "center" }}
+                                onPress={async () => {
+                                    if (cameraRef && activeButton == "picture") {
+                                        let photo = await cameraRef.takePictureAsync();
+                                        addEntry(photo.uri);
+                                    } else if (cameraRef && activeButton == "video") {
+                                        if (!recording) {
+                                            setRecording(true);
+                                            let video = await cameraRef.recordAsync();
+                                            addEntry(video.uri);
+                                            console.log("Recording Stopped");
+                                        } else {
+                                            setRecording(false);
+                                            cameraRef.stopRecording();
+                                        }
+                                    }
+                                }}
+                            >
+                                <View style={styles.recordButtonOutline}>
+                                    <View
+                                        style={
+                                            activeButton === "picture"
+                                                ? styles.picButton
+                                                : recording
+                                                    ? styles.recButton
+                                                    : styles.vidButton
+                                        }
+                                    ></View>
                                 </View>
-                            </View>
-                        </TouchableOpacity>
+                            </TouchableOpacity>
 
-                        <TouchableOpacity
-                            onPress={toggleCamera}>
-                            <Ionicons name='ios-camera-reverse' size={45} color="white" />
-                        </TouchableOpacity>
+                            <TouchableOpacity onPress={toggleCamera}>
+                                <Ionicons name="ios-camera-reverse" size={45} color="white" />
+                            </TouchableOpacity>
+                        </View>
                     </View>
-
                 </View>
-            </View >
-        </SafeAreaView >
+            }
+        </SafeAreaView>
     );
-
-
-
-}
+};
 
 const styles = StyleSheet.create({
     videoBottom: {
-        backgroundColor: 'transparent',
-        alignItems: 'center',
-        position: 'absolute',
+        backgroundColor: "transparent",
+        alignItems: "center",
+        position: "absolute",
         bottom: 0,
         left: 0,
         right: 0,
-        height: 200
+        height: 200,
     },
     pictureBottom: {
-        backgroundColor: 'black',
-        alignItems: 'center'
-
+        backgroundColor: "black",
+        alignItems: "center",
     },
     activeButton: {
-        color: 'orange',
+        color: "orange",
     },
     normalButton: {
-        color: 'white'
+        color: "white",
     },
 
     picButton: {
         borderWidth: 2,
-        borderRadius: '100%',
-        borderColor: 'white',
+        borderRadius: "100%",
+        borderColor: "white",
         height: 50,
         width: 50,
-        backgroundColor: 'white'
-
+        backgroundColor: "white",
     },
 
     vidButton: {
         borderWidth: 2,
-        borderRadius: '100%',
-        borderColor: 'red',
+        borderRadius: "100%",
+        borderColor: "red",
         height: 50,
         width: 50,
-        backgroundColor: 'red'
+        backgroundColor: "red",
     },
 
     recButton: {
         borderWidth: 2,
         borderRadius: 10,
-        borderColor: 'red',
+        borderColor: "red",
         height: 30,
         width: 30,
-        backgroundColor: 'red'
+        backgroundColor: "red",
     },
 
     recordButtonOutline: {
-
         borderWidth: 2,
         borderRadius: "50%",
-        borderColor: 'white',
+        borderColor: "white",
         height: 70,
         width: 70,
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center'
-
-
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
     },
 
     cameraLengthPic: {
-        height: 550
-
+        height: 550,
     },
 
     cameraLengthVid: {
-        height: 700
-
+        height: 700,
     },
 
     headerVideo: {
-        backgroundColor: 'black',
+        backgroundColor: "black",
         height: 100,
-        justifyContent: 'center',
-        alignItems: 'center'
-
-
-
+        justifyContent: "center",
+        alignItems: "center",
     },
 
     headerPicture: {
-        backgroundColor: 'black',
+        backgroundColor: "black",
         height: 120,
-        justifyContent: 'center',
-        alignItems: 'center'
-
+        justifyContent: "center",
+        alignItems: "center",
+    },
+    textCamera: {
+        color: "white",
+        fontFamily: "InterMedium",
+        fontSize: 18,
+    },
+    errorBtn: {
+        backgroundColor: "white",
+        height: "5%",
+        width: "50%",
+        borderRadius: 10,
+        justifyContent: "center",
+        alignItems: "center",
+        marginTop: 25,
+        marginBottom: 150,
+        fontFamily: "InterMedium",
+        fontSize: 18,
     }
 
-})
+});
 
-
-
-
-export default Video
+export default Video;

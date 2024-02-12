@@ -1,12 +1,11 @@
 import { Stack } from "expo-router";
 import { useFonts } from 'expo-font';
-import { useCallback, useEffect } from "react";
+import { useCallback } from "react";
 import * as SplashScreen from 'expo-splash-screen'
 
 const Layout = () => {
 
     SplashScreen.preventAutoHideAsync()
-
 
     const [fontsLoaded] = useFonts({
         InterRegular: require('../assets/fonts/Inter-Regular.ttf'),
@@ -15,13 +14,11 @@ const Layout = () => {
         InterBold: require('../assets/fonts/Inter-Bold.ttf')
     })
 
-
-
     const onLayoutRootView = useCallback(async () => {
 
         if (fontsLoaded) {
             await new Promise(resolve => setTimeout(resolve, 300));
-            //only show if fonts loaded
+
             await SplashScreen.hideAsync()
         }
     }, [fontsLoaded])

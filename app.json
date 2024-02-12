@@ -18,7 +18,13 @@
       [
         "expo-image-picker",
         {
-          "photosPermission": "The app accesses your photos to let you share them with your friends."
+          "photosPermission": "Allow mem·o·ra·bil·i·a to access your camera roll."
+        }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow mem·o·ra·bil·i·a to access your camera."
         }
       ]
     ],

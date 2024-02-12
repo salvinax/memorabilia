@@ -1,32 +1,42 @@
-import { View, Text, TextInput, TouchableOpacity, SafeAreaView } from "react-native";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  SafeAreaView,
+} from "react-native";
 import { useState } from "react";
 import { Auth } from "aws-amplify";
-import { Stack, useRouter, useNavigation } from 'expo-router'
+import { Stack, useRouter } from "expo-router";
 
+// Log in page
+// Log in using existing account using AWS Cognito
 
 const Login = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const router = useRouter()
-  const navigation = useNavigation();
+  const [error, setError] = useState("");
+  const router = useRouter();
 
   async function signIn() {
     try {
       await Auth.signIn(username, password);
       console.log("✅ Success");
-      router.push('/')
+      router.replace("/");
     } catch (error) {
       console.log("❌ Error signing in...", error);
+      setError(error.message);
     }
   }
+
   return (
-
-
-    <SafeAreaView style={{ flex: 1, backgroundColor: 'black' }}>
-
-      <Stack.Screen options={{
-        headerShown: false, gestureEnabled: false
-      }} />
+    <SafeAreaView style={{ flex: 1, backgroundColor: "black" }}>
+      <Stack.Screen
+        options={{
+          headerShown: false,
+          gestureEnabled: false,
+        }}
+      />
       <View style={{ alignItems: "center", flex: 1 }}>
         <Text
           style={{
@@ -104,7 +114,7 @@ const Login = () => {
           <Text style={{ fontSize: 20, fontFamily: "InterMedium" }}>login</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity onPress={() => router.replace('/register')}>
+        <TouchableOpacity onPress={() => router.replace("/register")}>
           <Text
             style={{
               color: "white",
@@ -116,6 +126,19 @@ const Login = () => {
             Don't have an account?{" "}
           </Text>
         </TouchableOpacity>
+        <Text
+          style={{
+            color: "white",
+            fontFamily: "InterRegular",
+            fontSize: 15,
+            marginTop: 30,
+            width: "90%",
+            textAlign: "center",
+            marginBottom: 30,
+          }}
+        >
+          {error}
+        </Text>
       </View>
     </SafeAreaView>
   );

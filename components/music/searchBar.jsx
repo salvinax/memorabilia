@@ -1,6 +1,5 @@
 import {
   View,
-  Image,
   TextInput,
   Text,
   Pressable,
@@ -8,7 +7,6 @@ import {
   FlatList,
 } from "react-native";
 
-import { icons } from "../../constants";
 import SongItem from "./songItem";
 import { useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -20,49 +18,34 @@ const SearchBar = ({ data }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [searchResult, setSearchResult] = useState([]);
 
-  //   useEffect(() => {
-  //     fetchData();
-  //   }, []);
-
-  const retrieveTokens = async (name) => {
-    try {
-      const data = await AsyncStorage.getItem(name);
-
-      return data;
-
-      //if you can't retrieve data then login again??
-    } catch (error) {
-      //was not able to retrieve data
-    }
-  };
-
+  // Retrieve Search Results from Spotify API
   useEffect(() => {
-    console.log(data);
-    const fetchData = async () => {
-      if (searchTerm.length > 0) {
-        const token = await retrieveTokens("token");
-        const search = await fetch(
-          `https://api.spotify.com/v1/search?q=${searchTerm}&type=track&market=CA&limit=10&offset=0`,
-          {
-            headers: {
-              Authorization: "Bearer " + token,
-            },
-          }
-        );
+    (async () => {
+      try {
+        if (searchTerm.length > 0) {
+          // Retrieve token in Local Storage
+          const token = await AsyncStorage.getItem("token");
 
-        if (!search.ok) {
-          console.log(search);
-          console.log("no data");
-        } else {
+          const search = await fetch(
+            `https://api.spotify.com/v1/search?q=${searchTerm}&type=track&market=CA&limit=10&offset=0`,
+            {
+              headers: {
+                Authorization: "Bearer " + token,
+              },
+            }
+          );
+
+          if (!search.ok) {
+            throw new Error(search.status);
+          }
+
           const songData = await search.json();
           setSearchResult(songData);
-
-          //   console.log(songData.tracks.items);
         }
+      } catch (e) {
+        console.log("Error: No Search Results", e);
       }
-    };
-
-    fetchData();
+    })();
   }, [searchTerm]);
 
   return (
@@ -70,7 +53,7 @@ const SearchBar = ({ data }) => {
       <Pressable
         style={{ alignSelf: "center" }}
         onPress={() => {
-          router.push("/new");
+          router.back();
         }}
       >
         <MaterialIcons name="keyboard-arrow-down" size={40} color="white" />
@@ -82,7 +65,6 @@ const SearchBar = ({ data }) => {
         value={searchTerm}
         onChangeText={setSearchTerm}
       />
-      {/* <Image style={styles.searchImg} source={icons.search} /> */}
 
       <FlatList
         ListHeaderComponent={
@@ -109,11 +91,6 @@ const SearchBar = ({ data }) => {
           />
         )}
       />
-
-      {/* <Text>here</Text>
-      <Text style={{ color: "white" }}>
-        {searchResult ? searchResult.tracks.items[0].name : "nothing here"}
-      </Text> */}
     </View>
   );
 };

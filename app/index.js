@@ -1,14 +1,14 @@
 import { View, SafeAreaView, TouchableOpacity } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import { Stack, useRouter, useLocation } from 'expo-router'
+import { Stack, useRouter } from 'expo-router'
 import CalendarOn from '../components/calendar'
 import { useState, useEffect } from 'react';
 import { FontAwesome5 } from '@expo/vector-icons';
 import { encode as btoa } from 'base-64';
-import { Amplify, Storage, Auth } from 'aws-amplify';
+import { Amplify, Auth } from 'aws-amplify';
 import config from '../src/aws-exports';
 
-//login with aws https://instamobile.io/mobile-development/react-native-aws-amplify/
+// Configure AWS Amplify 
 Amplify.configure({
     ...config,
     Analytics: {
@@ -17,47 +17,16 @@ Amplify.configure({
 });
 
 
-
-const setTokens = async (name, value) => {
-
-    try {
-        await AsyncStorage.setItem(name, value)
-
-    } catch (error) {
-        //was not able to save in async storage
-        console.log(error)
-    }
-}
-
-const retrieveTokens = async (name) => {
-
-    try {
-        const data = await AsyncStorage.getItem(name)
-
-        return data
-
-        //if you can't retrieve data then login again??
-
-    } catch (error) {
-        return null
-
-    }
-
-}
-
 const Home = () => {
 
     const router = useRouter()
-    const [auth, setAuth] = useState();
-    const [loading, setLoading] = useState(false)
-    const [name, setName] = useState('')
+    const [name, setName] = useState('');
 
     const getRefreshToken = async () => {
 
-        const refreshToken = retrieveTokens('refreshToken')
-
         try {
 
+            const refreshToken = await AsyncStorage.getItem('refreshToken');
 
             const credsB64 = btoa(SPOTIFY_CLIENT_ID + ':' + SPOTIFY_CLIENT_SECRET);
 
@@ -71,102 +40,83 @@ const Home = () => {
             })
 
             if (!res.ok) {
-                console.log(res.error)
-            } else {
-                const resJson = await res.json()
-
-                const {
-                    access_token: newAccessToken,
-                    refresh_token: newRefreshToken,
-                    expires_in: expiresIn,
-                } = resJson;
-
-
-
-                const expTime = new Date().getTime() + expiresIn * 1000
-
-                //do a function for async storate try and catch errors
-
-                await setTokens('token', newAccessToken)
-
-                if (newRefreshToken) {
-                    await setTokens('refreshToken', newRefreshToken);
-                }
-                await AsyncStorage.setItem('expirationToken', expTime.toString())
-
+                throw new Error('Failed to fetch data');
             }
+
+            const resJson = await res.json()
+
+            const {
+                access_token: newAccessToken,
+                refresh_token: newRefreshToken,
+                expires_in: expiresIn,
+            } = resJson;
+
+            const expTime = new Date().getTime() + expiresIn * 1000
+            console.log(expTime)
+
+            await AsyncStorage.setItem('token', newAccessToken)
+
+            if (newRefreshToken) {
+                await AsyncStorage.setItem('refreshToken', newRefreshToken);
+            }
+            await AsyncStorage.setItem('expirationToken', expTime.toString())
 
         } catch (err) {
-            console.log(err)
-
+            console.log('Could not connect to SPOTIFY endpoint', err)
         }
-
 
     }
-    //implement authorization code flow
 
+    //Implement authorization code flow
+    // Check Token 
     useEffect(() => {
-        const checkToken = async () => {
+        (async () => {
+            try {
+                let tokenTime = await AsyncStorage.getItem('expirationToken')
+                if (tokenTime) {
 
-            let token = await retrieveTokens('expirationToken')
-            console.log('date', token)
-
-            if (token) {
-                if (new Date().getTime() > token) {
-                    await getRefreshToken();
-                    console.log('refresh token generated')
-                } else {
-                    console.log('not yet')
+                    if (new Date().getTime() >= tokenTime) {
+                        await getRefreshToken();
+                    } else {
+                        console.log('Refresh Token is still valid.')
+                    }
                 }
-            } else {
-                console.log('no token')
+
+            } catch (error) {
+                console.log('No Refresh Token was generated: ', error)
             }
-        }
-
-
-        // checkToken()
-
+        })()
     }, [])
 
-    const checkUserSignedIn = async () => {
-        Auth.currentAuthenticatedUser()
-            .then((data) => {
-                setAuth(true)
-                setName(data.attributes.name)
-                console.log('name', data.attributes.name)
 
-            }).catch((error) => {
-                setAuth(false);
-                console.log("error with auth:", error);
-                router.push('/logIn')
-            })
-
-    };
-
-
+    // Check if User is Logged In and Retrieve Username
     useEffect(() => {
-        checkUserSignedIn();
+        (async () => {
+            Auth.currentAuthenticatedUser()
+                .then((data) => {
+                    setName(data.attributes.name);
+                }).catch((error) => {
+                    console.log("Error with auth:", error);
+                    router.replace('/logIn');
+                })
+        })()
 
     }, [router]);
 
 
     return (<>
 
-
         <SafeAreaView style={{ flex: 1, backgroundColor: 'black' }}>
 
             <Stack.Screen options={{
                 headerShown: false
             }} />
-            {/* {!loading ? <ActivityIndicator size="large" color="white" />
-                : */}
             <View style={{ flex: 1 }}>
                 <CalendarOn />
                 <TouchableOpacity onPress={() => { router.push({ pathname: '/new', params: { name } }) }} style={{ position: 'absolute', bottom: 10, alignSelf: 'center', backgroundColor: 'white', height: 50, width: 50, borderRadius: '50%', justifyContent: 'center', alignItems: 'center' }}>
                     <FontAwesome5 name="plus" size={24} color="black" />
                 </TouchableOpacity>
             </View>
-
         </SafeAreaView>
     </>
     )

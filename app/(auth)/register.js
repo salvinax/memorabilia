@@ -2,12 +2,18 @@ import { View, Text, TextInput, TouchableOpacity, SafeAreaView } from "react-nat
 import { useState } from "react";
 import { Auth } from "aws-amplify";
 import { Stack, useRouter } from 'expo-router'
+
+// Registration page
+// Create account using AWS Cognito
+
 const SignUp = () => {
+
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [firstName, setFirstName] = useState("");
   const [error, setError] = useState('')
   const router = useRouter()
+
   async function register() {
     try {
       await Auth.signUp({
@@ -18,11 +24,10 @@ const SignUp = () => {
       });
       console.log("✅ Success");
       router.push({ pathname: '/verification', params: { username } })
+
     } catch (error) {
       console.log("❌ Error signing up...", error);
       setError(error.message)
-
-      console.log(error)
     }
   }
   return (
@@ -143,6 +148,7 @@ const SignUp = () => {
           textAlign: 'center',
           marginBottom: 30
         }}>{error}</Text>
+
         <TouchableOpacity onPress={() => router.replace('/logIn')}>
           <Text
             style={{

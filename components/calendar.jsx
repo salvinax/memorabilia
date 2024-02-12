@@ -2,71 +2,56 @@ import { CalendarList } from "react-native-calendars";
 import { View, Text, Image, StyleSheet } from "react-native";
 import { Storage, API } from "aws-amplify";
 import * as queries from "../src/graphql/queries";
-import { useState, useEffect, createElement } from "react";
+import { useState, useEffect } from "react";
 import { TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as VideoThumbnails from "expo-video-thumbnails";
 
+// Display Calendar with all Journal Entries
 const CalendarOn = () => {
   const router = useRouter();
   const [userData, setUserData] = useState();
   const [imgData, setImgData] = useState([]);
-  const date = new Date();
 
-  const setTokens = async (name, value) => {
-    try {
-      await AsyncStorage.setItem(name, value);
-    } catch (error) {
-      //was not able to save in async storage
-      console.log(error);
-    }
-  };
+  // Get all Journal Entries when page first renders
+  useEffect(() => {
+    (async () => {
+      try {
+        const response = await API.graphql({
+          query: queries.entryByDate,
+          variables: {
+            type: "entry",
+            sortDirection: "ASC",
+          },
+        });
 
-  const getUserInfo = async () => {
-    try {
-      const response = await API.graphql({
-        query: queries.entryByDate,
-        variables: {
-          type: "entry",
-          sortDirection: "ASC",
-        },
-      });
+        let newArr = {};
+        let allDates = {};
 
-      // console.log(response.data.entryByDate.items);
-      let newArr = {};
-
-      for (let el of response.data.entryByDate.items) {
-        if (el.contentType !== "Text" && el.contentType !== "song") {
-          //if not text or song entry, get the media link and save it to async storage because router params has a character limit
-          const contentUrl = await Storage.get(el.mediaLink.key);
-          //store in async storage
-          await setTokens(el.date, contentUrl);
-
-          if (el.contentType == "video") {
-            const thumbnail = await generateThumbnail(contentUrl);
-            newArr[el.date] = thumbnail;
-          } else {
-            newArr[el.date] = contentUrl;
+        for (let el of response.data.entryByDate.items) {
+          allDates[el.date] = el;
+          if (el.contentType == "video" || el.contentType == "picture") {
+            const contentUrl = await Storage.get(el.mediaLink.key);
+            // Generate Video thumbnail and store in array
+            if (el.contentType == "video") {
+              const thumbnail = await generateThumbnail(contentUrl);
+              newArr[el.date] = thumbnail;
+            } else {
+              newArr[el.date] = contentUrl;
+            }
           }
         }
+
+        setImgData(newArr);
+        setUserData(allDates);
+      } catch (error) {
+        console.log("Could not retrieve user info: ", error);
+        // Handle any errors
       }
-
-      setUserData(response.data.entryByDate.items);
-      setImgData(newArr);
-      // const completeData = listData.map(async (el) => {
-      // MAP IS NOT ASYNC IF YOU WANT TO USE MAP YOU COULD ALSO USE await Promise.all(array.map(item => anAsyncFunction(item)));
-      // });
-    } catch (error) {
-      console.log("Could not retrieve user info: ", error);
-      // Handle any errors
-    }
-  };
-
-  useEffect(() => {
-    getUserInfo();
+    })();
   }, []);
 
+  // Generate Thumbnail for Video Journal Entries
   const generateThumbnail = async (uriVid) => {
     try {
       const { uri } = await VideoThumbnails.getThumbnailAsync(uriVid, {
@@ -78,12 +63,15 @@ const CalendarOn = () => {
     }
   };
 
+  // pastScrollRange={date.getMonth()}
+  // futureScrollRange={12 - date.getMonth() - 1}
+
   return (
     <>
       {userData && (
         <CalendarList
-          pastScrollRange={date.getMonth()}
-          futureScrollRange={12 - date.getMonth() - 1}
+          pastScrollRange={8}
+          futureScrollRange={1}
           scrollEnabled={true}
           calendarHeight={390}
           theme={{
@@ -128,14 +116,17 @@ const CalendarOn = () => {
             let displayStyle = styles.displayText;
             let disableButton = true;
 
-            const isDateFound = userData.find(
-              (el) => el.date == date.dateString
-            );
+            let isDateFound = userData[date.dateString];
 
             let url = "";
 
             if (isDateFound) {
               disableButton = false;
+
+              if (isDateFound.mediaLink?.key) {
+                isDateFound.key = isDateFound.mediaLink.key;
+              }
+
               if (
                 isDateFound.contentType == "Text" ||
                 isDateFound.contentType == "audio"
@@ -152,7 +143,7 @@ const CalendarOn = () => {
                 containerStyle = styles.imgCtn;
                 url = "https://" + isDateFound.albumLink;
               } else {
-                console.log("no content");
+                console.log("No content");
               }
             }
 
@@ -186,6 +177,7 @@ const CalendarOn = () => {
                 </View>
               </>
             );
+
             return (
               <>
                 {disableButton ? (
@@ -235,16 +227,6 @@ const styles = StyleSheet.create({
     height: 30,
     borderRadius: "50%",
   },
-  // noImgCtn: {
-  //   flex: 1,
-  //   justifyContent: "center",
-  //   alignItems: "center",
-  //   borderWidth: 2,
-  //   borderColor: "white",
-  //   width: 50,
-  //   height: 50,
-  //   borderRadius: "50%",
-  // },
   noEntryDate: {
     flex: 1,
     justifyContent: "center",

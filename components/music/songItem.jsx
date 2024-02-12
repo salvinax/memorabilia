@@ -1,48 +1,37 @@
 import { useEffect, useState } from "react";
 import { Text, View, TouchableOpacity, StyleSheet, Image } from "react-native";
-import { icons } from "../../constants";
-
 import { API, Auth } from "aws-amplify";
 import * as mutations from "../../src/graphql/mutations";
-import { ENDPOINT_TEMP, ENDPOINT_TEMP_STORE } from "@env";
-
 import { useRouter } from "expo-router";
 
 const SongItem = ({ data, prefix }) => {
   const [artistList, setArtistList] = useState("");
-  const [id, setID] = useState("");
-  const router = useRouter();
-  const [track, setTrack] = useState(() => {
-    if (prefix) {
-      //if it's a search result
-      return data;
-    } else {
-      //if its recently played songs
-      return data.track;
-    }
-  });
 
-  useEffect(() => {
-    Auth.currentUserInfo()
-      .then((user) => {
-        setID(user.attributes.sub);
-      })
-      .catch((error) => {
-        console.log("Auth Error", error);
-      });
-  }, []);
+  const router = useRouter();
+  let track;
+
+  // If it's a search result being displayed
+  if (prefix) {
+    track = data;
+  } else {
+    // If it's a recently played song
+    track = data.track;
+  }
 
   useEffect(() => {
     let artistArr = [];
     track.artists.map((item) => {
       artistArr.push(item.name);
     });
+
     setArtistList(artistArr.join(", "));
   }, []);
 
+  // Add Song Journal Entry to Calendar
   const addEntry = async () => {
     let yourDate = new Date();
-    let entryDate = yourDate.toISOString().split("T")[0];
+    // let entryDate = yourDate.toISOString().split("T")[0];
+    let entryDate = "2023-07-11";
 
     let pictureLink = track.album.images[0].url;
     pictureLink = pictureLink.substring(8);
@@ -66,13 +55,10 @@ const SongItem = ({ data, prefix }) => {
       console.log(response);
     } catch (error) {
       console.log("Not able to Create Entry: ", error);
+      // Add modal that alerts user
     }
-    router.push("/");
 
-    // console.log(pictureLink);
-    // console.log(artistList);
-    // console.log(track.name);
-    // console.log(track.id);
+    router.replace("/");
   };
 
   return (
