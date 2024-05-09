@@ -31,16 +31,15 @@ Full Design: https://www.figma.com/file/a8eunLYaYYBIZc4SthCWDJ/mem%C2%B7o%C2%B7r
 
 When I was younger I refused to have pictures of me taken, so I don't have much to look back on, which is really sad😢. After seeing this tweet a while ago, I'm making an effort to take more pictures/videos of my daily life and keep a journal. But logging your life and how you feel can sometimes feel like a chore, which is why I decided to make an app that can make journaling slightly easier.
 
+<p align="center">
+<img src="https://github.com/salvinax/memorabilia/assets/113158430/8b56c218-be7d-48be-a35f-cb4d52712243"/>
+</p>
+
 <ul>
   <li>Sometimes when I journal, I feel like my thoughts outpace my writing speed, so I added a voice memo functionality.</li>
    <li>I spend a lot of time on Spotify making playlists on my own or with friends. It's another way I use to document how I'm feeling and what I experience. For this reason, I used the Spotify API to allow users to log a song for their daily journal entry.</li>
     <li> The UI is also BeReal-esque.</li>
 </ul>
-
-
-<p align="center">
-<img src="https://github.com/salvinax/memorabilia/assets/113158430/8b56c218-be7d-48be-a35f-cb4d52712243"/>
-</p>
 
 # To-do
 
